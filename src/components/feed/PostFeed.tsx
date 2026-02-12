@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, Users, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 interface PostWithProfile {
@@ -21,14 +21,40 @@ interface PostWithProfile {
   };
 }
 
+type FeedFilter = "all" | "friends";
+
 export function PostFeed() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [colleges, setColleges] = useState<Record<string, string>>({});
+  const [friendIds, setFriendIds] = useState<string[]>([]);
+  const [friendships, setFriendships] = useState<Record<string, { status: string; id: string; direction: "sent" | "received" }>>({});
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FeedFilter>("all");
   const [newPostCount, setNewPostCount] = useState(0);
   const channelRef = useRef<any>(null);
+
+  const fetchFriends = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("friends")
+      .select("id, requester_id, addressee_id, status")
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+
+    if (data) {
+      const ids: string[] = [];
+      const map: Record<string, { status: string; id: string; direction: "sent" | "received" }> = {};
+      data.forEach((f: any) => {
+        const otherId = f.requester_id === user.id ? f.addressee_id : f.requester_id;
+        const direction = f.requester_id === user.id ? "sent" : "received";
+        map[otherId] = { status: f.status, id: f.id, direction };
+        if (f.status === "accepted") ids.push(otherId);
+      });
+      setFriendIds(ids);
+      setFriendships(map);
+    }
+  }, [user]);
 
   const fetchPosts = useCallback(async () => {
     const { data, error } = await supabase
@@ -71,11 +97,11 @@ export function PostFeed() {
     }
   }, []);
 
-  // Real-time subscription
   useEffect(() => {
     fetchPosts();
     fetchUserRatings();
     fetchColleges();
+    fetchFriends();
 
     channelRef.current = supabase
       .channel("posts-realtime")
@@ -83,7 +109,6 @@ export function PostFeed() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "posts" },
         (payload) => {
-          // If it's from the current user, auto-refresh
           if (payload.new.user_id === user?.id) {
             fetchPosts();
           } else {
@@ -98,11 +123,12 @@ export function PostFeed() {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [fetchPosts, fetchUserRatings, fetchColleges, user]);
+  }, [fetchPosts, fetchUserRatings, fetchColleges, fetchFriends, user]);
 
   const handleRefresh = () => {
     fetchPosts();
     fetchUserRatings();
+    fetchFriends();
   };
 
   const handleLoadNew = () => {
@@ -110,6 +136,19 @@ export function PostFeed() {
     fetchUserRatings();
     toast.success("Feed updated!");
   };
+
+  const getFriendStatus = (userId: string): "none" | "pending_sent" | "pending_received" | "accepted" => {
+    const f = friendships[userId];
+    if (!f) return "none";
+    if (f.status === "accepted") return "accepted";
+    if (f.status === "pending" && f.direction === "sent") return "pending_sent";
+    if (f.status === "pending" && f.direction === "received") return "pending_received";
+    return "none";
+  };
+
+  const displayedPosts = filter === "friends"
+    ? posts.filter((p) => friendIds.includes(p.user_id) || p.user_id === user?.id)
+    : posts;
 
   if (loading) {
     return (
@@ -141,6 +180,32 @@ export function PostFeed() {
         <CreatePostForm onPostCreated={handleRefresh} />
       </motion.div>
 
+      {/* Feed filter */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setFilter("all")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            filter === "all"
+              ? "bg-primary/15 text-primary border border-primary/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          All
+        </button>
+        <button
+          onClick={() => setFilter("friends")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            filter === "friends"
+              ? "bg-primary/15 text-primary border border-primary/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          Friends
+        </button>
+      </div>
+
       {/* New posts indicator */}
       <AnimatePresence>
         {newPostCount > 0 && (
@@ -157,7 +222,7 @@ export function PostFeed() {
         )}
       </AnimatePresence>
 
-      {posts.length === 0 ? (
+      {displayedPosts.length === 0 ? (
         <motion.div
           className="glass-card rounded-2xl p-12 text-center"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -165,16 +230,23 @@ export function PostFeed() {
           transition={{ duration: 0.4 }}
         >
           <Sparkles className="w-10 h-10 text-primary mx-auto mb-3" />
-          <h3 className="font-display text-lg font-bold text-foreground mb-1">No posts yet</h3>
-          <p className="text-sm text-muted-foreground">Be the first to post and earn +10 AURIX!</p>
+          <h3 className="font-display text-lg font-bold text-foreground mb-1">
+            {filter === "friends" ? "No friends' posts yet" : "No posts yet"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {filter === "friends" ? "Add friends to see their posts here!" : "Be the first to post and earn +10 AURIX!"}
+          </p>
         </motion.div>
       ) : (
-        posts.map((post, i) => (
+        displayedPosts.map((post, i) => (
           <PostCard
             key={post.id}
             post={post}
             userRating={userRatings[post.id] ?? null}
             collegeName={post.profiles.college_id ? colleges[post.profiles.college_id] : undefined}
+            friendStatus={getFriendStatus(post.user_id)}
+            friendshipId={friendships[post.user_id]?.id}
+            onFriendChange={fetchFriends}
             onRated={handleRefresh}
             index={i}
           />

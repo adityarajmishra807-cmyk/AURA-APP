@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { FriendButton } from "./FriendButton";
 import { Coins, Clock, Check, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,11 +27,14 @@ interface PostCardProps {
   };
   userRating?: number | null;
   collegeName?: string;
+  friendStatus?: "none" | "pending_sent" | "pending_received" | "accepted";
+  friendshipId?: string;
+  onFriendChange?: () => void;
   onRated: () => void;
   index?: number;
 }
 
-export function PostCard({ post, userRating, collegeName, onRated, index = 0 }: PostCardProps) {
+export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, index = 0 }: PostCardProps) {
   const { user, refreshProfile } = useAuth();
   const [ratingValue, setRatingValue] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -93,7 +97,7 @@ export function PostCard({ post, userRating, collegeName, onRated, index = 0 }: 
             {post.profiles.username?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 mr-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground">@{post.profiles.username}</span>
             <motion.div
@@ -114,6 +118,14 @@ export function PostCard({ post, userRating, collegeName, onRated, index = 0 }: 
             </span>
           </div>
         </div>
+        {!isOwnPost && friendStatus && onFriendChange && (
+          <FriendButton
+            targetUserId={post.user_id}
+            friendStatus={friendStatus}
+            friendshipId={friendshipId}
+            onStatusChange={onFriendChange}
+          />
+        )}
       </div>
 
       {/* Content */}
