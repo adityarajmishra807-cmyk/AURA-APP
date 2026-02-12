@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
-import { Sparkles } from "lucide-react";
+import { Sparkles, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 interface PostWithProfile {
   id: string;
@@ -26,6 +27,8 @@ export function PostFeed() {
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [colleges, setColleges] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [newPostCount, setNewPostCount] = useState(0);
+  const channelRef = useRef<any>(null);
 
   const fetchPosts = useCallback(async () => {
     const { data, error } = await supabase
@@ -40,6 +43,7 @@ export function PostFeed() {
         profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
       }));
       setPosts(mapped);
+      setNewPostCount(0);
     }
     setLoading(false);
   }, []);
@@ -67,15 +71,44 @@ export function PostFeed() {
     }
   }, []);
 
+  // Real-time subscription
   useEffect(() => {
     fetchPosts();
     fetchUserRatings();
     fetchColleges();
-  }, [fetchPosts, fetchUserRatings, fetchColleges]);
+
+    channelRef.current = supabase
+      .channel("posts-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        (payload) => {
+          // If it's from the current user, auto-refresh
+          if (payload.new.user_id === user?.id) {
+            fetchPosts();
+          } else {
+            setNewPostCount((c) => c + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [fetchPosts, fetchUserRatings, fetchColleges, user]);
 
   const handleRefresh = () => {
     fetchPosts();
     fetchUserRatings();
+  };
+
+  const handleLoadNew = () => {
+    fetchPosts();
+    fetchUserRatings();
+    toast.success("Feed updated!");
   };
 
   if (loading) {
@@ -107,6 +140,22 @@ export function PostFeed() {
       >
         <CreatePostForm onPostCreated={handleRefresh} />
       </motion.div>
+
+      {/* New posts indicator */}
+      <AnimatePresence>
+        {newPostCount > 0 && (
+          <motion.button
+            className="w-full py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors"
+            initial={{ opacity: 0, y: -20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -20, height: 0 }}
+            onClick={handleLoadNew}
+          >
+            <RefreshCw className="w-4 h-4" />
+            {newPostCount} new {newPostCount === 1 ? "post" : "posts"} — tap to refresh
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {posts.length === 0 ? (
         <motion.div
