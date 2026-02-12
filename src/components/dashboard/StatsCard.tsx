@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
@@ -35,11 +36,13 @@ export function StatsCard({
   accentColor = "primary",
 }: StatsCardProps) {
   return (
-    <div
+    <motion.div
       className={cn(
-        "glass-card rounded-xl p-6 relative overflow-hidden group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300",
+        "glass-card rounded-xl p-5 relative overflow-hidden group hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300",
         className
       )}
+      whileHover={{ y: -2, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <div
         className={cn(
@@ -48,18 +51,24 @@ export function StatsCard({
         )}
       />
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-muted-foreground">{title}</span>
-          <div className={cn("p-2.5 rounded-lg", iconBgMap[accentColor])}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</span>
+          <div className={cn("p-2 rounded-lg", iconBgMap[accentColor])}>
             {icon}
           </div>
         </div>
-        <div className="font-display text-3xl font-bold tracking-tight text-foreground">
+        <motion.div
+          className="font-display text-2xl font-bold tracking-tight text-foreground"
+          key={value}
+          initial={{ opacity: 0.5, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           {value}
-        </div>
+        </motion.div>
         {change && (
           <p
-            className={cn("text-sm mt-2 font-medium", {
+            className={cn("text-xs mt-1.5 font-medium", {
               "text-aura-mint": changeType === "positive",
               "text-destructive": changeType === "negative",
               "text-muted-foreground": changeType === "neutral",
@@ -69,6 +78,6 @@ export function StatsCard({
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

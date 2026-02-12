@@ -198,14 +198,67 @@ export type Database = {
           },
         ]
       }
+      transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          fee: number
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fee?: number
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fee?: number
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      claim_daily_streak: { Args: never; Returns: Json }
       claim_post_reward: { Args: { p_post_id: string }; Returns: Json }
+      get_college_leaderboard: {
+        Args: { p_college_id: string; p_limit?: number }
+        Returns: {
+          aurix_balance: number
+          avatar_url: string
+          rank: number
+          streak_count: number
+          username: string
+        }[]
+      }
+      get_leaderboard: {
+        Args: { p_limit?: number }
+        Returns: {
+          aurix_balance: number
+          avatar_url: string
+          college_id: string
+          rank: number
+          streak_count: number
+          username: string
+        }[]
+      }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
+        Returns: Json
+      }
+      transfer_aurix: {
+        Args: { p_amount: number; p_receiver_username: string }
         Returns: Json
       }
     }

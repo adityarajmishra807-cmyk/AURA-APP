@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import {
   LayoutDashboard,
   Trophy,
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Feed", icon: LayoutDashboard, href: "/" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Settings", icon: Settings, href: "/settings" },
@@ -28,28 +30,37 @@ export function AppSidebar() {
     <aside className="w-64 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border flex flex-col p-4 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-3 mb-8">
-        <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center glow-sm">
+        <motion.div
+          className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center glow-sm"
+          whileHover={{ rotate: 15, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
           <Sparkles className="w-4 h-4 text-primary-foreground" />
-        </div>
+        </motion.div>
         <span className="font-display text-xl font-bold text-gradient">Aura</span>
       </div>
 
       {/* AURIX Display */}
-      <div className="glass-card rounded-xl p-4 mb-6">
+      <motion.div
+        className="glass-card rounded-xl p-4 mb-6"
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 400 }}
+      >
         <div className="flex items-center gap-2 mb-1">
           <Coins className="w-4 h-4 text-aura-gold" />
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AURIX Balance</span>
         </div>
-        <p className="font-display text-2xl font-bold text-gradient-aurix aurix-glow">
-          {profile?.aurix_balance?.toLocaleString() || "0"}
-        </p>
+        <AnimatedCounter
+          value={profile?.aurix_balance || 0}
+          className="font-display text-2xl font-bold text-gradient-aurix aurix-glow block"
+        />
         <div className="flex items-center gap-2 mt-2">
           <Flame className="w-3 h-3 text-accent" />
           <span className="text-xs text-muted-foreground">
             {profile?.streak_count || 0} day streak
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Nav */}
       <nav className="flex-1 space-y-1">
@@ -60,14 +71,23 @@ export function AppSidebar() {
               key={item.label}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-primary glow-sm"
+                  ? "bg-sidebar-accent text-sidebar-primary"
                   : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/50"
               )}
             >
-              <item.icon className="w-4 h-4" />
-              {item.label}
+              {isActive && (
+                <motion.div
+                  className="absolute inset-0 rounded-lg bg-sidebar-accent glow-sm"
+                  layoutId="activeNav"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-3">
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </span>
             </Link>
           );
         })}

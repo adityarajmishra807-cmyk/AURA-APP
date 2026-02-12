@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
@@ -34,7 +35,6 @@ export function PostFeed() {
       .limit(50);
 
     if (!error && data) {
-      // Flatten profiles from array to object
       const mapped = data.map((p: any) => ({
         ...p,
         profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
@@ -100,22 +100,34 @@ export function PostFeed() {
 
   return (
     <div className="space-y-6">
-      <CreatePostForm onPostCreated={handleRefresh} />
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <CreatePostForm onPostCreated={handleRefresh} />
+      </motion.div>
 
       {posts.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center">
+        <motion.div
+          className="glass-card rounded-2xl p-12 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           <Sparkles className="w-10 h-10 text-primary mx-auto mb-3" />
           <h3 className="font-display text-lg font-bold text-foreground mb-1">No posts yet</h3>
           <p className="text-sm text-muted-foreground">Be the first to post and earn +10 AURIX!</p>
-        </div>
+        </motion.div>
       ) : (
-        posts.map((post) => (
+        posts.map((post, i) => (
           <PostCard
             key={post.id}
             post={post}
             userRating={userRatings[post.id] ?? null}
             collegeName={post.profiles.college_id ? colleges[post.profiles.college_id] : undefined}
             onRated={handleRefresh}
+            index={i}
           />
         ))
       )}
