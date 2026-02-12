@@ -9,6 +9,7 @@ interface Profile {
   bio: string;
   avatar_url: string | null;
   college_id: string | null;
+  college_changed_at: string | null;
   aurix_balance: number;
   aurix_lifetime_earned: number;
   aurix_lifetime_lost: number;
