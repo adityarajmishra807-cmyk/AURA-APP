@@ -68,6 +68,7 @@ export default {
           mint: "hsl(var(--aura-mint))",
           lavender: "hsl(var(--aura-lavender))",
           sky: "hsl(var(--aura-sky))",
+          gold: "hsl(var(--aura-gold))",
         },
       },
       borderRadius: {

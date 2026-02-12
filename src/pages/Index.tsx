@@ -1,67 +1,87 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { MiniChart } from "@/components/dashboard/MiniChart";
-import { Users, TrendingUp, Zap, Eye } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Coins, TrendingUp, TrendingDown, Flame, Trophy, Zap } from "lucide-react";
 
 const Index = () => {
+  const { profile } = useAuth();
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">
-            Good morning, Alex ✨
+            Welcome back, <span className="text-gradient">{profile?.username}</span> ✨
           </h1>
           <p className="text-muted-foreground mt-1">
-            Here's what's happening with your projects today.
+            Your AURIX is waiting. Rate, post, and rise.
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <StatsCard
-            title="Total Users"
-            value="12,847"
-            change="+12.5% from last month"
-            changeType="positive"
-            icon={<Users className="w-4 h-4" />}
+            title="AURIX Balance"
+            value={(profile?.aurix_balance || 0).toLocaleString()}
+            icon={<Coins className="w-4 h-4" />}
             accentColor="primary"
           />
           <StatsCard
-            title="Revenue"
-            value="$48.2K"
-            change="+8.2% from last month"
+            title="Lifetime Earned"
+            value={(profile?.aurix_lifetime_earned || 0).toLocaleString()}
+            change="Total AURIX gained"
             changeType="positive"
             icon={<TrendingUp className="w-4 h-4" />}
             accentColor="mint"
           />
           <StatsCard
-            title="Active Sessions"
-            value="1,429"
-            change="-3.1% from yesterday"
+            title="Lifetime Lost"
+            value={(profile?.aurix_lifetime_lost || 0).toLocaleString()}
+            change="Total AURIX lost"
             changeType="negative"
-            icon={<Zap className="w-4 h-4" />}
+            icon={<TrendingDown className="w-4 h-4" />}
             accentColor="rose"
-          />
-          <StatsCard
-            title="Page Views"
-            value="89.4K"
-            change="+18.7% from last week"
-            changeType="positive"
-            icon={<Eye className="w-4 h-4" />}
-            accentColor="sky"
           />
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3">
-            <MiniChart />
+        {/* Secondary Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <StatsCard
+            title="Current Streak"
+            value={`${profile?.streak_count || 0} days`}
+            change={`Best: ${profile?.highest_streak || 0} days`}
+            changeType="neutral"
+            icon={<Flame className="w-4 h-4" />}
+            accentColor="rose"
+          />
+          <StatsCard
+            title="Today's Earnings"
+            value={`+${profile?.aurix_daily_earnings || 0}`}
+            icon={<Zap className="w-4 h-4" />}
+            accentColor="sky"
+          />
+          <StatsCard
+            title="Rank"
+            value="—"
+            change="Coming soon"
+            changeType="neutral"
+            icon={<Trophy className="w-4 h-4" />}
+            accentColor="primary"
+          />
+        </div>
+
+        {/* Placeholder for feed */}
+        <div className="glass-card rounded-2xl p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 glow">
+            <Zap className="w-8 h-8 text-primary-foreground" />
           </div>
-          <div className="lg:col-span-2">
-            <ActivityFeed />
-          </div>
+          <h2 className="font-display text-xl font-bold text-foreground mb-2">
+            Feed Coming Soon
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            In Phase 2, you'll see posts from other users here and rate them from −10 to +10 AURIX.
+          </p>
         </div>
       </div>
     </DashboardLayout>
