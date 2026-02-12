@@ -14,7 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      colleges: {
+        Row: {
+          created_at: string
+          domain: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          aurix_balance: number
+          aurix_daily_earnings: number
+          aurix_daily_losses: number
+          aurix_lifetime_earned: number
+          aurix_lifetime_lost: number
+          avatar_url: string | null
+          bio: string | null
+          college_changed_at: string | null
+          college_id: string | null
+          created_at: string
+          highest_streak: number
+          id: string
+          last_login_date: string | null
+          referral_code: string | null
+          streak_count: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          aurix_balance?: number
+          aurix_daily_earnings?: number
+          aurix_daily_losses?: number
+          aurix_lifetime_earned?: number
+          aurix_lifetime_lost?: number
+          avatar_url?: string | null
+          bio?: string | null
+          college_changed_at?: string | null
+          college_id?: string | null
+          created_at?: string
+          highest_streak?: number
+          id?: string
+          last_login_date?: string | null
+          referral_code?: string | null
+          streak_count?: number
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          aurix_balance?: number
+          aurix_daily_earnings?: number
+          aurix_daily_losses?: number
+          aurix_lifetime_earned?: number
+          aurix_lifetime_lost?: number
+          avatar_url?: string | null
+          bio?: string | null
+          college_changed_at?: string | null
+          college_id?: string | null
+          created_at?: string
+          highest_streak?: number
+          id?: string
+          last_login_date?: string | null
+          referral_code?: string | null
+          streak_count?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
