@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       aurix_transactions: {
         Row: {
           amount: number
@@ -198,6 +228,48 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          revoked: boolean
+          stage_1_completed: boolean
+          stage_1_rewarded: boolean
+          stage_2_completed: boolean
+          stage_2_rewarded: boolean
+          stage_3_completed: boolean
+          stage_3_rewarded: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          revoked?: boolean
+          stage_1_completed?: boolean
+          stage_1_rewarded?: boolean
+          stage_2_completed?: boolean
+          stage_2_rewarded?: boolean
+          stage_3_completed?: boolean
+          stage_3_rewarded?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          revoked?: boolean
+          stage_1_completed?: boolean
+          stage_1_rewarded?: boolean
+          stage_2_completed?: boolean
+          stage_2_rewarded?: boolean
+          stage_3_completed?: boolean
+          stage_3_rewarded?: boolean
+        }
+        Relationships: []
+      }
       transfers: {
         Row: {
           amount: number
@@ -230,8 +302,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_referral_milestones: { Args: never; Returns: Json }
       claim_daily_streak: { Args: never; Returns: Json }
       claim_post_reward: { Args: { p_post_id: string }; Returns: Json }
+      claim_referral_reward: {
+        Args: { p_referral_id: string; p_stage: number }
+        Returns: Json
+      }
       get_college_leaderboard: {
         Args: { p_college_id: string; p_limit?: number }
         Returns: {
@@ -253,6 +330,16 @@ export type Database = {
           username: string
         }[]
       }
+      log_abuse: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_severity?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      register_referral: { Args: { p_referral_code: string }; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
         Returns: Json

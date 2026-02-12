@@ -13,12 +13,14 @@ import {
   LogOut,
   Flame,
   Coins,
+  Gift,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "Transfer", icon: Send, href: "/transfer" },
+  { label: "Referrals", icon: Gift, href: "/referrals" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
