@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,13 +27,16 @@ interface PostCardProps {
   userRating?: number | null;
   collegeName?: string;
   onRated: () => void;
+  index?: number;
 }
 
-export function PostCard({ post, userRating, collegeName, onRated }: PostCardProps) {
+export function PostCard({ post, userRating, collegeName, onRated, index = 0 }: PostCardProps) {
   const { user, refreshProfile } = useAuth();
   const [ratingValue, setRatingValue] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [hasRated, setHasRated] = useState(userRating !== undefined && userRating !== null);
+  const [ratedValue, setRatedValue] = useState(userRating);
+  const [showSuccess, setShowSuccess] = useState(false);
   const isOwnPost = user?.id === post.user_id;
 
   const handleRate = async () => {
@@ -54,7 +58,10 @@ export function PostCard({ post, userRating, collegeName, onRated }: PostCardPro
       return;
     }
 
+    setRatedValue(ratingValue);
     setHasRated(true);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
     await refreshProfile();
     onRated();
     toast.success(
@@ -72,7 +79,12 @@ export function PostCard({ post, userRating, collegeName, onRated }: PostCardPro
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
+      className="glass-card rounded-2xl p-6 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/5"
+    >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <Avatar className="w-10 h-10 border border-border">
@@ -83,15 +95,16 @@ export function PostCard({ post, userRating, collegeName, onRated }: PostCardPro
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">
-              @{post.profiles.username}
-            </span>
-            <div className="flex items-center gap-1">
+            <span className="text-sm font-semibold text-foreground">@{post.profiles.username}</span>
+            <motion.div
+              className="flex items-center gap-1"
+              whileHover={{ scale: 1.05 }}
+            >
               <Coins className="w-3 h-3 text-aura-gold" />
               <span className="text-xs font-medium text-aura-gold">
                 {post.profiles.aurix_balance.toLocaleString()}
               </span>
-            </div>
+            </motion.div>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {collegeName && <span>{collegeName}</span>}
@@ -108,32 +121,39 @@ export function PostCard({ post, userRating, collegeName, onRated }: PostCardPro
 
       {/* Image */}
       {post.image_url && (
-        <div className="mb-4 rounded-xl overflow-hidden border border-border/30">
-          <img
-            src={post.image_url}
-            alt="Post image"
-            className="w-full max-h-96 object-cover"
-            loading="lazy"
-          />
-        </div>
+        <motion.div
+          className="mb-4 rounded-xl overflow-hidden border border-border/30"
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+        >
+          <img src={post.image_url} alt="Post" className="w-full max-h-96 object-cover" loading="lazy" />
+        </motion.div>
       )}
 
       {/* Rating section */}
       {!isOwnPost && !hasRated && (
-        <div className="border-t border-border/30 pt-4 mt-4">
+        <motion.div
+          className="border-t border-border/30 pt-4 mt-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Rate this post
-            </span>
-            <span className={cn("font-display text-xl font-bold", getRatingColor(ratingValue))}>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rate this post</span>
+            <motion.span
+              className={cn("font-display text-xl font-bold", getRatingColor(ratingValue))}
+              key={ratingValue}
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
               {ratingValue > 0 ? `+${ratingValue}` : ratingValue}
-            </span>
+            </motion.span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 text-xs text-destructive">
-              <Minus className="w-3 h-3" />
-              <span>10</span>
+              <Minus className="w-3 h-3" /><span>10</span>
             </div>
             <Slider
               value={[ratingValue]}
@@ -144,37 +164,61 @@ export function PostCard({ post, userRating, collegeName, onRated }: PostCardPro
               className="flex-1"
             />
             <div className="flex items-center gap-1 text-xs text-aura-mint">
-              <Plus className="w-3 h-3" />
-              <span>10</span>
+              <Plus className="w-3 h-3" /><span>10</span>
             </div>
           </div>
 
-          <Button
-            onClick={handleRate}
-            disabled={submitting || ratingValue === 0}
-            size="sm"
-            className="w-full mt-3 gradient-primary text-primary-foreground glow-sm"
-          >
-            {submitting ? "Rating..." : `Send ${ratingValue > 0 ? "+" : ""}${ratingValue} AURIX`}
-          </Button>
-        </div>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Button
+              onClick={handleRate}
+              disabled={submitting || ratingValue === 0}
+              size="sm"
+              className="w-full mt-3 gradient-primary text-primary-foreground glow-sm"
+            >
+              {submitting ? "Rating..." : `Send ${ratingValue > 0 ? "+" : ""}${ratingValue} AURIX`}
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
 
-      {/* Already rated indicator */}
-      {hasRated && !isOwnPost && (
-        <div className="border-t border-border/30 pt-3 mt-4 flex items-center gap-2 text-muted-foreground">
-          <Check className="w-4 h-4 text-aura-mint" />
-          <span className="text-xs">
-            You rated this {userRating !== undefined && userRating !== null ? (userRating > 0 ? `+${userRating}` : userRating) : ""} AURIX
-          </span>
-        </div>
-      )}
+      {/* Rated indicator */}
+      <AnimatePresence>
+        {hasRated && !isOwnPost && (
+          <motion.div
+            className="border-t border-border/30 pt-3 mt-4 flex items-center gap-2"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, delay: 0.1 }}
+            >
+              <Check className="w-4 h-4 text-aura-mint" />
+            </motion.div>
+            <span className="text-xs text-muted-foreground">
+              You rated this {ratedValue !== undefined && ratedValue !== null ? (ratedValue > 0 ? `+${ratedValue}` : ratedValue) : ""} AURIX
+            </span>
+            {showSuccess && (
+              <motion.span
+                className="text-xs text-aura-mint font-medium ml-auto"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                ✓ Sent!
+              </motion.span>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isOwnPost && (
         <div className="border-t border-border/30 pt-3 mt-4">
           <span className="text-xs text-muted-foreground">Your post</span>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

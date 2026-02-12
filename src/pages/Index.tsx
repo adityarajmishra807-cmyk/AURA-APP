@@ -1,6 +1,8 @@
+import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PostFeed } from "@/components/feed/PostFeed";
+import { StreakClaimer } from "@/components/StreakClaimer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
 
@@ -9,16 +11,20 @@ const Index = () => {
 
   return (
     <DashboardLayout>
+      <StreakClaimer />
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <h1 className="font-display text-3xl font-bold text-foreground">
             Welcome, <span className="text-gradient">{profile?.username}</span> ✨
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Rate, post, and rise.
-          </p>
-        </div>
+          <p className="text-muted-foreground mt-1">Rate, post, and rise.</p>
+        </motion.div>
 
         {/* Compact Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
