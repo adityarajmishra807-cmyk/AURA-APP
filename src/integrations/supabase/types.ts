@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      aurix_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       colleges: {
         Row: {
           created_at: string
@@ -32,6 +62,33 @@ export type Database = {
           domain?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          aurix_reward_claimed: boolean
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          user_id: string
+        }
+        Insert: {
+          aurix_reward_claimed?: boolean
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          user_id: string
+        }
+        Update: {
+          aurix_reward_claimed?: boolean
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -106,12 +163,51 @@ export type Database = {
           },
         ]
       }
+      ratings: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          rater_id: string
+          receiver_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          rater_id: string
+          receiver_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          rater_id?: string
+          receiver_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_post_reward: { Args: { p_post_id: string }; Returns: Json }
+      submit_rating: {
+        Args: { p_post_id: string; p_value: number }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
