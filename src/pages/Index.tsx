@@ -20,10 +20,10 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="font-display text-3xl font-bold text-foreground">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
             Welcome, <span className="text-gradient">{profile?.username}</span> ✨
           </h1>
-          <p className="text-muted-foreground mt-1">Rate, post, and rise.</p>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Rate, post, and rise.</p>
         </motion.div>
 
         {/* Compact Stats */}

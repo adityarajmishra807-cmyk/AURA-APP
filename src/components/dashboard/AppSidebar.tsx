@@ -29,7 +29,7 @@ export function AppSidebar() {
   const { profile, signOut } = useAuth();
 
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border flex flex-col p-4 shrink-0">
+    <aside className="hidden md:flex w-64 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border flex-col p-4 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-3 mb-8">
         <motion.div

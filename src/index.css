@@ -132,4 +132,8 @@
   .aurix-glow {
     text-shadow: 0 0 20px hsl(var(--aura-gold) / 0.5);
   }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }

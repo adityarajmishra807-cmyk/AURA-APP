@@ -101,18 +101,18 @@ export default function Referrals() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-3">
-            <Gift className="w-8 h-8 text-primary" />
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+            <Gift className="w-7 h-7 md:w-8 md:h-8 text-primary" />
             Referrals
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
             Invite friends and earn up to {totalPossible} AURIX per referral
           </p>
         </motion.div>
 
         {/* Referral link card */}
         <motion.div
-          className="glass-card rounded-2xl p-6 mb-6 glow-sm"
+          className="glass-card rounded-2xl p-4 md:p-6 mb-6 glow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -120,7 +120,7 @@ export default function Referrals() {
           <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
             Your Referral Link
           </h3>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               value={referralLink}
               readOnly
