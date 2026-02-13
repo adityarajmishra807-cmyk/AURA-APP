@@ -53,15 +53,15 @@ export default function Transfer() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-3">
-            <Send className="w-8 h-8 text-primary" />
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+            <Send className="w-7 h-7 md:w-8 md:h-8 text-primary" />
             Transfer AURIX
           </h1>
-          <p className="text-muted-foreground mt-1">Send AURIX to another user</p>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Send AURIX to another user</p>
         </motion.div>
 
         <motion.div
-          className="glass-card rounded-2xl p-8 glow-sm"
+          className="glass-card rounded-2xl p-5 md:p-8 glow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}

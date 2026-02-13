@@ -110,12 +110,12 @@ export default function Settings() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="font-display text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground mt-1">Update your profile</p>
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Update your profile</p>
         </motion.div>
 
         <motion.div
-          className="glass-card rounded-2xl p-8 space-y-6"
+          className="glass-card rounded-2xl p-5 md:p-8 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}

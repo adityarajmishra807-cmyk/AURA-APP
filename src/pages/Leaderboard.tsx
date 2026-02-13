@@ -83,15 +83,15 @@ export default function Leaderboard() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-3">
-            <Trophy className="w-8 h-8 text-aura-gold" />
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+            <Trophy className="w-7 h-7 md:w-8 md:h-8 text-aura-gold" />
             Leaderboard
           </h1>
-          <p className="text-muted-foreground mt-1">Top AURIX holders</p>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Top AURIX holders</p>
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
           <button
             onClick={() => setTab("global")}
             className={cn(
