@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -99,7 +100,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
         </Avatar>
         <div className="flex-1 min-w-0 mr-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">@{post.profiles.username}</span>
+            <Link to={`/profile/${post.profiles.username}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">@{post.profiles.username}</Link>
             <motion.div
               className="flex items-center gap-1"
               whileHover={{ scale: 1.05 }}
