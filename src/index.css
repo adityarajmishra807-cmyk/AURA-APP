@@ -63,6 +63,14 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  /* Smooth scroll on iOS */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -75,6 +83,13 @@
     @apply bg-card/80 backdrop-blur-lg border border-border/50 shadow-lg shadow-primary/5;
   }
 
+  /* Lighter glass for mobile performance */
+  @media (max-width: 768px) {
+    .glass-card {
+      @apply bg-card/90 backdrop-blur-md shadow-md shadow-primary/5;
+    }
+  }
+
   .glow {
     box-shadow: 0 0 40px -10px hsl(var(--aura-glow) / 0.4),
                 0 0 80px -20px hsl(var(--aura-lavender) / 0.2);
@@ -82,6 +97,16 @@
 
   .glow-sm {
     box-shadow: 0 0 20px -5px hsl(var(--aura-glow) / 0.3);
+  }
+
+  /* Reduced glow on mobile for performance */
+  @media (max-width: 768px) {
+    .glow {
+      box-shadow: 0 0 24px -8px hsl(var(--aura-glow) / 0.3);
+    }
+    .glow-sm {
+      box-shadow: 0 0 12px -4px hsl(var(--aura-glow) / 0.2);
+    }
   }
 
   .gradient-aura {
@@ -135,5 +160,33 @@
 
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Touch-optimized tap target */
+  .tap-target {
+    @apply relative;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Active tap feedback */
+  .tap-scale {
+    @apply transition-transform duration-150 will-change-transform;
+  }
+  .tap-scale:active {
+    transform: scale(0.95);
+  }
+
+  /* Mobile scroll snap */
+  .snap-x-mandatory {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snap-start {
+    scroll-snap-align: start;
   }
 }

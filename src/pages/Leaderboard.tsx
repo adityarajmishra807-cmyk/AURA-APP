@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -69,33 +70,35 @@ export default function Leaderboard() {
   }, [tab, selectedCollege]);
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-aura-gold" />;
+    if (rank === 1) return <Crown className="w-5 h-5 md:w-5 md:h-5 text-aura-gold" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-muted-foreground" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-aura-rose" />;
     return <span className="text-sm font-bold text-muted-foreground w-5 text-center">{rank}</span>;
   };
 
+  const isTopThree = (rank: number) => rank <= 3;
+
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto">
         <motion.div
-          className="mb-6"
+          className="mb-4 md:mb-6"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
-            <Trophy className="w-7 h-7 md:w-8 md:h-8 text-aura-gold" />
+          <h1 className="font-display text-xl md:text-3xl font-bold text-foreground flex items-center gap-2 md:gap-3">
+            <Trophy className="w-6 h-6 md:w-8 md:h-8 text-aura-gold" />
             Leaderboard
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">Top AURIX holders</p>
+          <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Top AURIX holders</p>
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2 mb-4 md:mb-6">
           <button
             onClick={() => setTab("global")}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm font-medium transition-all tap-scale",
               tab === "global" ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
@@ -104,7 +107,7 @@ export default function Leaderboard() {
           <button
             onClick={() => setTab("college")}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm font-medium transition-all tap-scale",
               tab === "college" ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >
@@ -113,7 +116,7 @@ export default function Leaderboard() {
 
           {tab === "college" && (
             <Select value={selectedCollege} onValueChange={setSelectedCollege}>
-              <SelectTrigger className="w-48 bg-muted/50 border-border/50">
+              <SelectTrigger className="w-36 md:w-48 bg-muted/50 border-border/50 text-sm">
                 <SelectValue placeholder="Select college" />
               </SelectTrigger>
               <SelectContent>
@@ -125,55 +128,108 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Leaderboard list */}
-        <div className="glass-card rounded-2xl overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center text-muted-foreground animate-pulse">Loading rankings...</div>
-          ) : entries.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">No entries yet</div>
-          ) : (
-            <div className="divide-y divide-border/30">
-              {entries.map((entry, i) => (
-                <motion.div
-                  key={entry.username}
-                  className={cn(
-                    "flex items-center gap-4 p-4 hover:bg-muted/20 transition-colors",
-                    entry.username === profile?.username && "bg-primary/5 border-l-2 border-primary"
-                  )}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03, duration: 0.3 }}
-                >
-                  <div className="w-8 flex justify-center">
-                    {getRankIcon(entry.rank)}
-                  </div>
-                  <Avatar className="w-9 h-9 border border-border">
+        {/* Top 3 on mobile - stacked highlight cards */}
+        {!loading && entries.length >= 3 && (
+          <div className="md:hidden space-y-2 mb-4">
+            {entries.filter((e) => isTopThree(e.rank)).map((entry) => (
+              <motion.div
+                key={entry.username}
+                className={cn(
+                  "glass-card rounded-xl p-3.5 flex items-center gap-3 tap-scale",
+                  entry.rank === 1 && "border-aura-gold/30 bg-aura-gold/5",
+                  entry.rank === 2 && "border-muted-foreground/20",
+                  entry.rank === 3 && "border-aura-rose/20",
+                  entry.username === profile?.username && "ring-1 ring-primary/40"
+                )}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: entry.rank * 0.08 }}
+              >
+                <div className="w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
+                <Link to={`/profile/${entry.username}`}>
+                  <Avatar className="w-10 h-10 border border-border">
                     <AvatarImage src={entry.avatar_url || ""} />
                     <AvatarFallback className="bg-muted text-xs font-bold">
                       {entry.username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <Link to={`/profile/${entry.username}`} className="text-sm font-semibold text-foreground truncate block">
+                    @{entry.username}
+                    {entry.username === profile?.username && (
+                      <span className="text-xs text-primary ml-1">(you)</span>
+                    )}
+                  </Link>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5 text-aura-gold" />
+                  <span className="font-display font-bold text-sm text-foreground">
+                    {entry.aurix_balance.toLocaleString()}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Leaderboard list */}
+        <div className="glass-card rounded-2xl overflow-hidden">
+          {loading ? (
+            <div className="p-6 md:p-8 text-center text-muted-foreground animate-pulse text-sm">Loading rankings...</div>
+          ) : entries.length === 0 ? (
+            <div className="p-6 md:p-8 text-center text-muted-foreground text-sm">No entries yet</div>
+          ) : (
+            <div className="divide-y divide-border/30">
+              {entries
+                .filter((e) => {
+                  // On mobile, skip top 3 since they're shown above
+                  if (typeof window !== "undefined" && window.innerWidth < 768 && isTopThree(e.rank)) return false;
+                  return true;
+                })
+                .map((entry, i) => (
+                <motion.div
+                  key={entry.username}
+                  className={cn(
+                    "flex items-center gap-3 md:gap-4 p-3 md:p-4 transition-colors tap-scale",
+                    entry.username === profile?.username && "bg-primary/5 border-l-2 border-primary"
+                  )}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.02, duration: 0.2 }}
+                >
+                  <div className="w-6 md:w-8 flex justify-center">
+                    {getRankIcon(entry.rank)}
+                  </div>
+                  <Link to={`/profile/${entry.username}`}>
+                    <Avatar className="w-8 h-8 md:w-9 md:h-9 border border-border">
+                      <AvatarImage src={entry.avatar_url || ""} />
+                      <AvatarFallback className="bg-muted text-[10px] md:text-xs font-bold">
+                        {entry.username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
+                    <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold text-foreground truncate block">
                       @{entry.username}
                       {entry.username === profile?.username && (
-                        <span className="text-xs text-primary ml-2">(you)</span>
+                        <span className="text-[10px] md:text-xs text-primary ml-1">(you)</span>
                       )}
-                    </p>
+                    </Link>
                     {tab === "global" && entry.college_id && collegeNames[entry.college_id] && (
-                      <p className="text-xs text-muted-foreground">{collegeNames[entry.college_id]}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{collegeNames[entry.college_id]}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     {entry.streak_count > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
                         <Flame className="w-3 h-3 text-accent" />
                         {entry.streak_count}d
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5">
-                      <Coins className="w-4 h-4 text-aura-gold" />
-                      <span className="font-display font-bold text-foreground">
+                    <div className="flex items-center gap-1">
+                      <Coins className="w-3.5 h-3.5 md:w-4 md:h-4 text-aura-gold" />
+                      <span className="font-display font-bold text-xs md:text-base text-foreground">
                         {entry.aurix_balance.toLocaleString()}
                       </span>
                     </div>

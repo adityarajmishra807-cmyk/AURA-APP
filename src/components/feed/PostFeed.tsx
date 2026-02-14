@@ -173,7 +173,7 @@ export function PostFeed() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ export function PostFeed() {
       </motion.div>
 
       {/* Feed filter */}
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 md:gap-2 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setFilter("all")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${

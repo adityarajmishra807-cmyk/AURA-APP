@@ -87,34 +87,33 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
-      className="glass-card rounded-2xl p-6 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/5"
+      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
+      className="glass-card rounded-2xl p-4 md:p-6 transition-shadow duration-300 md:hover:shadow-xl md:hover:shadow-primary/5"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <Avatar className="w-10 h-10 border border-border">
-          <AvatarImage src={post.profiles.avatar_url || ""} />
-          <AvatarFallback className="bg-muted font-display font-bold text-sm">
-            {post.profiles.username?.[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+      <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
+        <Link to={`/profile/${post.profiles.username}`}>
+          <Avatar className="w-9 h-9 md:w-10 md:h-10 border border-border tap-scale">
+            <AvatarImage src={post.profiles.avatar_url || ""} />
+            <AvatarFallback className="bg-muted font-display font-bold text-xs md:text-sm">
+              {post.profiles.username?.[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="flex-1 min-w-0 mr-1">
-          <div className="flex items-center gap-2">
-            <Link to={`/profile/${post.profiles.username}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">@{post.profiles.username}</Link>
-            <motion.div
-              className="flex items-center gap-1"
-              whileHover={{ scale: 1.05 }}
-            >
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <Link to={`/profile/${post.profiles.username}`} className="text-sm font-semibold text-foreground tap-scale">@{post.profiles.username}</Link>
+            <div className="flex items-center gap-0.5">
               <Coins className="w-3 h-3 text-aura-gold" />
-              <span className="text-xs font-medium text-aura-gold">
+              <span className="text-[10px] md:text-xs font-medium text-aura-gold">
                 {post.profiles.aurix_balance.toLocaleString()}
               </span>
-            </motion.div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {collegeName && <span>{collegeName}</span>}
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
+            {collegeName && <span className="truncate max-w-[100px] md:max-w-none">{collegeName}</span>}
+            <span className="flex items-center gap-0.5">
+              <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
           </div>
@@ -130,31 +129,27 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       </div>
 
       {/* Content */}
-      <p className="text-foreground leading-relaxed mb-4">{post.content}</p>
+      <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">{post.content}</p>
 
       {/* Image */}
       {post.image_url && (
-        <motion.div
-          className="mb-4 rounded-xl overflow-hidden border border-border/30"
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
-        >
-          <img src={post.image_url} alt="Post" className="w-full max-h-96 object-cover" loading="lazy" />
-        </motion.div>
+        <div className="mb-3 md:mb-4 rounded-xl overflow-hidden border border-border/30">
+          <img src={post.image_url} alt="Post" className="w-full max-h-72 md:max-h-96 object-cover" loading="lazy" />
+        </div>
       )}
 
       {/* Rating section */}
       {!isOwnPost && !hasRated && (
         <motion.div
-          className="border-t border-border/30 pt-4 mt-4"
+          className="border-t border-border/30 pt-3 md:pt-4 mt-3 md:mt-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rate this post</span>
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">Rate this post</span>
             <motion.span
-              className={cn("font-display text-xl font-bold", getRatingColor(ratingValue))}
+              className={cn("font-display text-lg md:text-xl font-bold", getRatingColor(ratingValue))}
               key={ratingValue}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
@@ -164,8 +159,8 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             </motion.span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-xs text-destructive">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-0.5 text-[10px] md:text-xs text-destructive">
               <Minus className="w-3 h-3" /><span>10</span>
             </div>
             <Slider
@@ -176,7 +171,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               step={1}
               className="flex-1"
             />
-            <div className="flex items-center gap-1 text-xs text-aura-mint">
+            <div className="flex items-center gap-0.5 text-[10px] md:text-xs text-aura-mint">
               <Plus className="w-3 h-3" /><span>10</span>
             </div>
           </div>
@@ -186,7 +181,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               onClick={handleRate}
               disabled={submitting || ratingValue === 0}
               size="sm"
-              className="w-full mt-3 gradient-primary text-primary-foreground glow-sm"
+              className="w-full mt-2.5 md:mt-3 gradient-primary text-primary-foreground glow-sm tap-scale h-10 md:h-9"
             >
               {submitting ? "Rating..." : `Send ${ratingValue > 0 ? "+" : ""}${ratingValue} AURIX`}
             </Button>
@@ -198,10 +193,10 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       <AnimatePresence>
         {hasRated && !isOwnPost && (
           <motion.div
-            className="border-t border-border/30 pt-3 mt-4 flex items-center gap-2"
+            className="border-t border-border/30 pt-2.5 md:pt-3 mt-3 md:mt-4 flex items-center gap-2"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -228,7 +223,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       </AnimatePresence>
 
       {isOwnPost && (
-        <div className="border-t border-border/30 pt-3 mt-4">
+        <div className="border-t border-border/30 pt-2.5 md:pt-3 mt-3 md:mt-4">
           <span className="text-xs text-muted-foreground">Your post</span>
         </div>
       )}
