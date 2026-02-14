@@ -21,7 +21,7 @@ interface PostWithProfile {
   };
 }
 
-type FeedFilter = "all" | "friends";
+type FeedFilter = "all" | "friends" | "mine";
 
 export function PostFeed() {
   const { user } = useAuth();
@@ -148,6 +148,8 @@ export function PostFeed() {
 
   const displayedPosts = filter === "friends"
     ? posts.filter((p) => friendIds.includes(p.user_id) || p.user_id === user?.id)
+    : filter === "mine"
+    ? posts.filter((p) => p.user_id === user?.id)
     : posts;
 
   if (loading) {
@@ -204,6 +206,17 @@ export function PostFeed() {
           <Users className="w-3.5 h-3.5" />
           Friends
         </button>
+        <button
+          onClick={() => setFilter("mine")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            filter === "mine"
+              ? "bg-primary/15 text-primary border border-primary/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          My Posts
+        </button>
       </div>
 
       {/* New posts indicator */}
@@ -231,10 +244,10 @@ export function PostFeed() {
         >
           <Sparkles className="w-10 h-10 text-primary mx-auto mb-3" />
           <h3 className="font-display text-lg font-bold text-foreground mb-1">
-            {filter === "friends" ? "No friends' posts yet" : "No posts yet"}
+            {filter === "friends" ? "No friends' posts yet" : filter === "mine" ? "You haven't posted yet" : "No posts yet"}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {filter === "friends" ? "Add friends to see their posts here!" : "Be the first to post and earn +10 AURIX!"}
+            {filter === "friends" ? "Add friends to see their posts here!" : filter === "mine" ? "Create your first post above!" : "Be the first to post and earn +10 AURIX!"}
           </p>
         </motion.div>
       ) : (
