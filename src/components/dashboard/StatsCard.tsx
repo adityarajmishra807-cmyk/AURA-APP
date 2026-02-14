@@ -38,27 +38,29 @@ export function StatsCard({
   return (
     <motion.div
       className={cn(
-        "glass-card rounded-xl p-5 relative overflow-hidden group hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300",
+        "glass-card rounded-xl p-3 md:p-5 relative overflow-hidden group tap-scale",
+        "md:hover:shadow-xl md:hover:shadow-primary/10 transition-shadow duration-300",
         className
       )}
       whileHover={{ y: -2, scale: 1.01 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+          "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:block",
           accentMap[accentColor]
         )}
       />
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</span>
-          <div className={cn("p-2 rounded-lg", iconBgMap[accentColor])}>
+        <div className="flex items-center justify-between mb-1.5 md:mb-3">
+          <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</span>
+          <div className={cn("p-1.5 md:p-2 rounded-lg", iconBgMap[accentColor])}>
             {icon}
           </div>
         </div>
         <motion.div
-          className="font-display text-2xl font-bold tracking-tight text-foreground"
+          className="font-display text-lg md:text-2xl font-bold tracking-tight text-foreground"
           key={value}
           initial={{ opacity: 0.5, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,7 +70,7 @@ export function StatsCard({
         </motion.div>
         {change && (
           <p
-            className={cn("text-xs mt-1.5 font-medium", {
+            className={cn("text-[10px] md:text-xs mt-1 md:mt-1.5 font-medium", {
               "text-aura-mint": changeType === "positive",
               "text-destructive": changeType === "negative",
               "text-muted-foreground": changeType === "neutral",
