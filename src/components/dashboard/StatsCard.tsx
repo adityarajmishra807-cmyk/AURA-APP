@@ -42,9 +42,9 @@ export function StatsCard({
         "md:hover:shadow-xl md:hover:shadow-primary/10 transition-shadow duration-300",
         className
       )}
-      whileHover={{ y: -2, scale: 1.01 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      whileHover={{ y: -3, scale: 1.02 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 500, damping: 25 }}
     >
       <div
         className={cn(

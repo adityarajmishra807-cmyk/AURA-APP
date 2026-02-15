@@ -95,24 +95,24 @@ export default function Leaderboard() {
 
         {/* Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-4 md:mb-6">
-          <button
-            onClick={() => setTab("global")}
-            className={cn(
-              "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm font-medium transition-all tap-scale",
-              tab === "global" ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            )}
-          >
-            Global
-          </button>
-          <button
-            onClick={() => setTab("college")}
-            className={cn(
-              "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm font-medium transition-all tap-scale",
-              tab === "college" ? "bg-primary text-primary-foreground glow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            )}
-          >
-            College
-          </button>
+          {(["global", "college"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="relative px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm font-medium tap-scale"
+            >
+              {tab === t && (
+                <motion.div
+                  className="absolute inset-0 rounded-lg bg-primary glow-sm"
+                  layoutId="leaderboardTab"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className={cn("relative z-10", tab === t ? "text-primary-foreground" : "text-muted-foreground")}>
+                {t === "global" ? "Global" : "College"}
+              </span>
+            </button>
+          ))}
 
           {tab === "college" && (
             <Select value={selectedCollege} onValueChange={setSelectedCollege}>
