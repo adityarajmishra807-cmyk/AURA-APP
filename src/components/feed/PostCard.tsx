@@ -85,10 +85,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
       className="glass-card rounded-2xl p-4 md:p-6 transition-shadow duration-300 md:hover:shadow-xl md:hover:shadow-primary/5"
+      whileHover={{ y: -2 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">

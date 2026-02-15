@@ -184,39 +184,29 @@ export function PostFeed() {
 
       {/* Feed filter */}
       <div className="flex gap-1.5 md:gap-2 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setFilter("all")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filter === "all"
-              ? "bg-primary/15 text-primary border border-primary/30"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <Globe className="w-3.5 h-3.5" />
-          All
-        </button>
-        <button
-          onClick={() => setFilter("friends")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filter === "friends"
-              ? "bg-primary/15 text-primary border border-primary/30"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          Friends
-        </button>
-        <button
-          onClick={() => setFilter("mine")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filter === "mine"
-              ? "bg-primary/15 text-primary border border-primary/30"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          My Posts
-        </button>
+        {([
+          { key: "all" as FeedFilter, label: "All", Icon: Globe },
+          { key: "friends" as FeedFilter, label: "Friends", Icon: Users },
+          { key: "mine" as FeedFilter, label: "My Posts", Icon: Sparkles },
+        ]).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
+            className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors tap-scale"
+          >
+            {filter === tab.key && (
+              <motion.div
+                className="absolute inset-0 rounded-lg bg-primary/15 border border-primary/30"
+                layoutId="feedFilterTab"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className={`relative z-10 flex items-center gap-1.5 ${filter === tab.key ? "text-primary" : "text-muted-foreground"}`}>
+              <tab.Icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* New posts indicator */}
@@ -251,19 +241,29 @@ export function PostFeed() {
           </p>
         </motion.div>
       ) : (
-        displayedPosts.map((post, i) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            userRating={userRatings[post.id] ?? null}
-            collegeName={post.profiles.college_id ? colleges[post.profiles.college_id] : undefined}
-            friendStatus={getFriendStatus(post.user_id)}
-            friendshipId={friendships[post.user_id]?.id}
-            onFriendChange={fetchFriends}
-            onRated={handleRefresh}
-            index={i}
-          />
-        ))
+        <AnimatePresence mode="popLayout">
+          {displayedPosts.map((post, i) => (
+            <motion.div
+              key={post.id}
+              layout
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+              transition={{ type: "spring", stiffness: 360, damping: 28, delay: i * 0.04 }}
+            >
+              <PostCard
+                post={post}
+                userRating={userRatings[post.id] ?? null}
+                collegeName={post.profiles.college_id ? colleges[post.profiles.college_id] : undefined}
+                friendStatus={getFriendStatus(post.user_id)}
+                friendshipId={friendships[post.user_id]?.id}
+                onFriendChange={fetchFriends}
+                onRated={handleRefresh}
+                index={i}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       )}
     </div>
   );

@@ -6,6 +6,19 @@ import { StreakClaimer } from "@/components/StreakClaimer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 16, scale: 0.96 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, stiffness: 400, damping: 28 } },
+};
+
 const Index = () => {
   const { profile } = useAuth();
 
@@ -16,9 +29,9 @@ const Index = () => {
         {/* Header */}
         <motion.div
           className="mb-4 md:mb-6"
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ type: "spring", stiffness: 350, damping: 30 }}
         >
           <h1 className="font-display text-xl md:text-3xl font-bold text-foreground">
             Welcome, <span className="text-gradient">{profile?.username}</span> ✨
@@ -26,36 +39,55 @@ const Index = () => {
           <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Rate, post, and rise.</p>
         </motion.div>
 
-        {/* Compact Stats - horizontal scroll on mobile */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mb-5 md:mb-8">
-          <StatsCard
-            title="AURIX"
-            value={(profile?.aurix_balance || 0).toLocaleString()}
-            icon={<Coins className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            accentColor="primary"
-          />
-          <StatsCard
-            title="Earned"
-            value={`+${profile?.aurix_lifetime_earned || 0}`}
-            icon={<TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            accentColor="mint"
-          />
-          <StatsCard
-            title="Lost"
-            value={`-${profile?.aurix_lifetime_lost || 0}`}
-            icon={<TrendingDown className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            accentColor="rose"
-          />
-          <StatsCard
-            title="Streak"
-            value={`${profile?.streak_count || 0}d`}
-            icon={<Flame className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            accentColor="sky"
-          />
-        </div>
+        {/* Stats with stagger */}
+        <motion.div
+          className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mb-5 md:mb-8"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={item}>
+            <StatsCard
+              title="AURIX"
+              value={(profile?.aurix_balance || 0).toLocaleString()}
+              icon={<Coins className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+              accentColor="primary"
+            />
+          </motion.div>
+          <motion.div variants={item}>
+            <StatsCard
+              title="Earned"
+              value={`+${profile?.aurix_lifetime_earned || 0}`}
+              icon={<TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+              accentColor="mint"
+            />
+          </motion.div>
+          <motion.div variants={item}>
+            <StatsCard
+              title="Lost"
+              value={`-${profile?.aurix_lifetime_lost || 0}`}
+              icon={<TrendingDown className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+              accentColor="rose"
+            />
+          </motion.div>
+          <motion.div variants={item}>
+            <StatsCard
+              title="Streak"
+              value={`${profile?.streak_count || 0}d`}
+              icon={<Flame className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+              accentColor="sky"
+            />
+          </motion.div>
+        </motion.div>
 
         {/* Feed */}
-        <PostFeed />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, type: "spring", stiffness: 300, damping: 28 }}
+        >
+          <PostFeed />
+        </motion.div>
       </div>
     </DashboardLayout>
   );
