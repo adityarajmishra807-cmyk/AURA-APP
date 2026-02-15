@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
+import { PullToRefresh } from "./PullToRefresh";
 import { Sparkles, RefreshCw, Users, Globe } from "lucide-react";
 import { toast } from "sonner";
 
@@ -125,11 +126,9 @@ export function PostFeed() {
     };
   }, [fetchPosts, fetchUserRatings, fetchColleges, fetchFriends, user]);
 
-  const handleRefresh = () => {
-    fetchPosts();
-    fetchUserRatings();
-    fetchFriends();
-  };
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([fetchPosts(), fetchUserRatings(), fetchFriends()]);
+  }, [fetchPosts, fetchUserRatings, fetchFriends]);
 
   const handleLoadNew = () => {
     fetchPosts();
@@ -173,6 +172,7 @@ export function PostFeed() {
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-4 md:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -266,5 +266,6 @@ export function PostFeed() {
         </AnimatePresence>
       )}
     </div>
+    </PullToRefresh>
   );
 }
