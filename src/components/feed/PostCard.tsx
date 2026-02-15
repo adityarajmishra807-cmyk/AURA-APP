@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { FriendButton } from "./FriendButton";
-import { Coins, Clock, Check, Minus, Plus } from "lucide-react";
+import { AnimatedRatingBar } from "./AnimatedRatingBar";
+import { Coins, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -44,44 +44,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [showSuccess, setShowSuccess] = useState(false);
   const isOwnPost = user?.id === post.user_id;
 
-  const handleRate = async () => {
-    if (ratingValue === 0) {
-      toast.error("Choose a non-zero rating");
-      return;
-    }
-
-    setSubmitting(true);
-    const { data, error } = await supabase.rpc("submit_rating", {
-      p_post_id: post.id,
-      p_value: ratingValue,
-    });
-
-    const result = data as any;
-    if (error || !result?.success) {
-      toast.error(result?.error || "Failed to submit rating");
-      setSubmitting(false);
-      return;
-    }
-
-    setRatedValue(ratingValue);
-    setHasRated(true);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
-    await refreshProfile();
-    onRated();
-    toast.success(
-      ratingValue > 0
-        ? `+${ratingValue} AURIX sent to @${post.profiles.username}`
-        : `${ratingValue} AURIX to @${post.profiles.username}`
-    );
-    setSubmitting(false);
-  };
-
-  const getRatingColor = (value: number) => {
-    if (value > 0) return "text-aura-mint";
-    if (value < 0) return "text-destructive";
-    return "text-muted-foreground";
-  };
+  // Rating logic is now handled inline by AnimatedRatingBar's onCommit
 
   return (
     <motion.div
@@ -145,46 +108,40 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center justify-between mb-2 md:mb-3">
-            <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">Rate this post</span>
-            <motion.span
-              className={cn("font-display text-lg md:text-xl font-bold", getRatingColor(ratingValue))}
-              key={ratingValue}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              {ratingValue > 0 ? `+${ratingValue}` : ratingValue}
-            </motion.span>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="flex items-center gap-0.5 text-[10px] md:text-xs text-destructive">
-              <Minus className="w-3 h-3" /><span>10</span>
-            </div>
-            <Slider
-              value={[ratingValue]}
-              onValueChange={([v]) => setRatingValue(v)}
-              min={-10}
-              max={10}
-              step={1}
-              className="flex-1"
-            />
-            <div className="flex items-center gap-0.5 text-[10px] md:text-xs text-aura-mint">
-              <Plus className="w-3 h-3" /><span>10</span>
-            </div>
-          </div>
-
-          <motion.div whileTap={{ scale: 0.97 }}>
-            <Button
-              onClick={handleRate}
-              disabled={submitting || ratingValue === 0}
-              size="sm"
-              className="w-full mt-2.5 md:mt-3 gradient-primary text-primary-foreground glow-sm tap-scale h-10 md:h-9"
-            >
-              {submitting ? "Rating..." : `Send ${ratingValue > 0 ? "+" : ""}${ratingValue} AURIX`}
-            </Button>
-          </motion.div>
+          <AnimatedRatingBar
+            value={ratingValue}
+            onChange={(v) => setRatingValue(v)}
+            onCommit={async (v) => {
+              if (v === 0) {
+                toast.error("Choose a non-zero rating");
+                return;
+              }
+              setSubmitting(true);
+              const { data, error } = await supabase.rpc("submit_rating", {
+                p_post_id: post.id,
+                p_value: v,
+              });
+              const result = data as any;
+              if (error || !result?.success) {
+                toast.error(result?.error || "Failed to submit rating");
+                setSubmitting(false);
+                return;
+              }
+              setRatedValue(v);
+              setHasRated(true);
+              setShowSuccess(true);
+              setTimeout(() => setShowSuccess(false), 2000);
+              await refreshProfile();
+              onRated();
+              toast.success(
+                v > 0
+                  ? `+${v} AURIX sent to @${post.profiles.username}`
+                  : `${v} AURIX to @${post.profiles.username}`
+              );
+              setSubmitting(false);
+            }}
+            disabled={submitting}
+          />
         </motion.div>
       )}
 
