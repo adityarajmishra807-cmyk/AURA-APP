@@ -166,7 +166,7 @@ export default function ProfileSetup() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">You can change this once every 6 months</p>
+            <p className="text-xs text-muted-foreground">You can change your college anytime</p>
           </div>
 
           <Button
