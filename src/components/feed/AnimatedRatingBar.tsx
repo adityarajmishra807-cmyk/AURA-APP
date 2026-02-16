@@ -253,7 +253,7 @@ export function AnimatedRatingBar({
       >
         {/* Background track */}
         <div
-          className="absolute left-0 right-0 h-2 rounded-full overflow-hidden"
+          className="absolute left-0 right-0 h-3.5 rounded-full overflow-hidden"
           style={{
             top: "50%",
             transform: "translateY(-50%)",
@@ -262,9 +262,23 @@ export function AnimatedRatingBar({
           }}
         />
 
+        {/* Glow trail behind thumb */}
+        <motion.div
+          className="absolute h-3.5 rounded-full transition-none pointer-events-none"
+          style={{
+            top: "50%",
+            transform: "translateY(-50%)",
+            left: `${Math.min(fraction, 0.5) * 100}%`,
+            width: `${Math.abs(fraction - 0.5) * 100}%`,
+            background: currentColor,
+            opacity: isDragging ? 0.6 : 0.4,
+            filter: `blur(${isDragging ? 4 : 2}px)`,
+          }}
+        />
+
         {/* Filled track */}
         <div
-          className="absolute h-2 rounded-full transition-none"
+          className="absolute h-3.5 rounded-full transition-none"
           style={{
             top: "50%",
             transform: "translateY(-50%)",
@@ -282,7 +296,7 @@ export function AnimatedRatingBar({
             return (
               <div
                 key={s}
-                className="absolute w-1 h-1 rounded-full bg-muted-foreground/30"
+                className="absolute w-1.5 h-1.5 rounded-full bg-muted-foreground/30"
                 style={{ left: `${pos}%`, transform: "translateX(-50%)" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -292,6 +306,12 @@ export function AnimatedRatingBar({
             );
           })}
         </div>
+
+        {/* Center marker */}
+        <div
+          className="absolute w-0.5 h-5 bg-muted-foreground/40 rounded-full pointer-events-none"
+          style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}
+        />
 
         {/* Thumb — Aurix Coin */}
         <motion.div
