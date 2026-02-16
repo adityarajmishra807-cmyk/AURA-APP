@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,6 +53,7 @@ interface PostCardProps {
 
 export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, index = 0 }: PostCardProps) {
   const { user, refreshProfile } = useAuth();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [ratingValue, setRatingValue] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [hasRated, setHasRated] = useState(userRating !== undefined && userRating !== null);
@@ -62,6 +63,18 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [deleting, setDeleting] = useState(false);
   const isOwnPost = user?.id === post.user_id;
 
+  // Per-element scroll depth shadow
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Shadow intensifies as card enters viewport center, then fades
+  const shadowOpacity = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [0.03, 0.18, 0.18, 0.03]);
+  const shadowBlur = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [8, 28, 28, 8]);
+  const shadowSpread = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [-4, -2, -2, -4]);
+  const boxShadow = useMotionTemplate`0 4px ${shadowBlur}px ${shadowSpread}px hsl(265 80% 65% / ${shadowOpacity})`;
+
   const handleDelete = async () => {
     setDeleting(true);
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
@@ -69,7 +82,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       toast.error("Failed to delete post");
     } else {
       toast.success("Post deleted");
-      onRated(); // triggers refresh
+      onRated();
     }
     setDeleting(false);
     setShowDeleteDialog(false);
@@ -79,7 +92,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
 
   return (
     <motion.div
-      className="glass-card rounded-2xl p-4 md:p-6 transition-shadow duration-300 md:hover:shadow-xl md:hover:shadow-primary/5"
+      ref={cardRef}
+      className="glass-card rounded-2xl p-4 md:p-6 will-change-transform"
+      style={{ boxShadow }}
       whileHover={{ y: -2 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
