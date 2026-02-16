@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,6 +26,7 @@ interface College {
 
 export default function Leaderboard() {
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState<"global" | "college">("global");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
@@ -183,8 +185,7 @@ export default function Leaderboard() {
             <div className="divide-y divide-border/30">
               {entries
                 .filter((e) => {
-                  // On mobile, skip top 3 since they're shown above
-                  if (typeof window !== "undefined" && window.innerWidth < 768 && isTopThree(e.rank)) return false;
+                  if (isMobile && isTopThree(e.rank)) return false;
                   return true;
                 })
                 .map((entry, i) => (
