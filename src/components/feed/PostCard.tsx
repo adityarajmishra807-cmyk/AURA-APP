@@ -75,6 +75,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const shadowSpread = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [-4, -2, -2, -4]);
   const boxShadow = useMotionTemplate`0 4px ${shadowBlur}px ${shadowSpread}px hsl(265 80% 65% / ${shadowOpacity})`;
 
+  // Subtle scroll-lag: card trails behind scroll by ~5% (8px max offset)
+  const lagY = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -6]);
+
   const handleDelete = async () => {
     setDeleting(true);
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
@@ -94,7 +97,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
     <motion.div
       ref={cardRef}
       className="glass-card rounded-2xl p-4 md:p-6 will-change-transform"
-      style={{ boxShadow }}
+      style={{ boxShadow, y: lagY }}
       whileHover={{ y: -2 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
