@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PostFeed } from "@/components/feed/PostFeed";
+import { ParallaxBackground } from "@/components/feed/ParallaxBackground";
 import { StreakClaimer } from "@/components/StreakClaimer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
@@ -25,7 +26,10 @@ const Index = () => {
   return (
     <DashboardLayout>
       <StreakClaimer />
-      <div className="max-w-3xl mx-auto">
+      <div className="relative max-w-3xl mx-auto">
+        <ParallaxBackground />
+        {/* Content layer — above parallax */}
+        <div className="relative z-10">
         {/* Header */}
         <motion.div
           className="mb-4 md:mb-6"
@@ -88,6 +92,7 @@ const Index = () => {
         >
           <PostFeed />
         </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );
