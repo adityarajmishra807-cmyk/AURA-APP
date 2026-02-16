@@ -293,35 +293,44 @@ export function AnimatedRatingBar({
           })}
         </div>
 
-        {/* Thumb */}
+        {/* Thumb — Aurix Coin */}
         <motion.div
           className={cn(
             "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10",
-            "w-6 h-6 md:w-5 md:h-5 rounded-full",
-            "border-2 bg-background shadow-lg",
             "flex items-center justify-center",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            isDragging && "scale-110",
           )}
           style={{
             left: thumbLeft,
-            borderColor: currentColor,
-            boxShadow: `0 0 12px -2px ${currentColor}44`,
             willChange: "transform",
             minWidth: 44,
             minHeight: 44,
           }}
           animate={
             committed && !prefersReducedMotion
-              ? { scale: [0.98, 1.05, 1] }
-              : {}
+              ? { scale: [0.92, 1.12, 1], rotate: [0, 8, -4, 0] }
+              : isDragging
+              ? { scale: 1.15 }
+              : { scale: 1 }
           }
-          transition={{ duration: 0.08, ease: "easeOut" }}
+          transition={
+            committed
+              ? { duration: 0.25, ease: "easeOut" }
+              : { type: "spring", stiffness: 400, damping: 22 }
+          }
         >
           <div
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: currentColor }}
-          />
+            className="relative w-7 h-7 md:w-6 md:h-6 rounded-full flex items-center justify-center"
+            style={{
+              background: `radial-gradient(circle at 35% 35%, #FFD700, #B8860B)`,
+              boxShadow: isDragging
+                ? `0 0 16px 4px ${currentColor}55, 0 0 24px 2px #FFD70044`
+                : `0 2px 8px -2px #00000044, 0 0 10px -2px #FFD70033`,
+              border: `2px solid #FFD70088`,
+            }}
+          >
+            <Coins className="w-3.5 h-3.5 md:w-3 md:h-3 text-yellow-900 drop-shadow-sm" />
+          </div>
         </motion.div>
 
         {/* Particles */}
