@@ -307,11 +307,20 @@ export function AnimatedRatingBar({
           })}
         </div>
 
-        {/* Center marker */}
+        {/* Center logo on the track line */}
         <div
-          className="absolute w-0.5 h-5 bg-muted-foreground/40 rounded-full pointer-events-none"
-          style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}
-        />
+          className="absolute z-[5] pointer-events-none flex items-center justify-center rounded-full bg-muted border border-border/50"
+          style={{
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 20,
+            height: 20,
+            opacity: Math.abs(fraction - 0.5) < 0.05 ? 0.3 : 0.7,
+          }}
+        >
+          <Coins className="w-3 h-3 text-aura-gold" />
+        </div>
 
         {/* Thumb — Aurix Coin */}
         <motion.div
