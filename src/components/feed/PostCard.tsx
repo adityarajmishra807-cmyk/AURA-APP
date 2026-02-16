@@ -98,8 +98,11 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       ref={cardRef}
       className="glass-card rounded-2xl p-4 md:p-6 will-change-transform"
       style={{ boxShadow, y: lagY }}
+      initial={{ opacity: 0, y: 18, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
       whileHover={{ y: -2 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      transition={{ type: "spring", stiffness: 350, damping: 30, delay: index * 0.04 }}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
