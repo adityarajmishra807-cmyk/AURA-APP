@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, AlertCircle } from "lucide-react";
+import { Camera, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface College {
@@ -25,18 +25,6 @@ export default function Settings() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const canChangeCollege = (() => {
-    if (!profile?.college_changed_at) return true;
-    const changed = new Date(profile.college_changed_at);
-    const oneWeekLater = new Date(changed.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return new Date() >= oneWeekLater;
-  })();
-
-  const nextCollegeChangeDate = (() => {
-    if (!profile?.college_changed_at) return null;
-    const changed = new Date(profile.college_changed_at);
-    return new Date(changed.getTime() + 7 * 24 * 60 * 60 * 1000);
-  })();
 
   useEffect(() => {
     supabase.from("colleges").select("id, name").order("name").then(({ data }) => {
@@ -83,9 +71,8 @@ export default function Settings() {
       avatar_url: avatarUrl,
     };
 
-    if (canChangeCollege && collegeId !== profile?.college_id) {
+    if (collegeId !== profile?.college_id) {
       updates.college_id = collegeId || null;
-      updates.college_changed_at = new Date().toISOString();
     }
 
     const { error } = await supabase
@@ -163,7 +150,7 @@ export default function Settings() {
           {/* College */}
           <div className="space-y-2">
             <Label>College</Label>
-            <Select value={collegeId} onValueChange={setCollegeId} disabled={!canChangeCollege}>
+            <Select value={collegeId} onValueChange={setCollegeId}>
               <SelectTrigger className="bg-muted/50 border-border/50">
                 <SelectValue placeholder="Select your college" />
               </SelectTrigger>
@@ -173,15 +160,7 @@ export default function Settings() {
                 ))}
               </SelectContent>
             </Select>
-            {!canChangeCollege && nextCollegeChangeDate && (
-              <div className="flex items-center gap-1.5 text-xs text-aura-gold">
-                <AlertCircle className="w-3 h-3" />
-                <span>Can change after {nextCollegeChangeDate.toLocaleDateString()}</span>
-              </div>
-            )}
-            {canChangeCollege && (
-              <p className="text-xs text-muted-foreground">You can change this once every week</p>
-            )}
+            <p className="text-xs text-muted-foreground">You can change your college anytime</p>
           </div>
 
           <Button
