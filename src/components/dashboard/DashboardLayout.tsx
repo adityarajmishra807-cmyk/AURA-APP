@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const pageVariants = {
   initial: { opacity: 0, y: 12, scale: 0.99 },
@@ -24,6 +25,10 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen w-full gradient-aura flex flex-col md:flex-row">
       <AppSidebar />
       <main className="flex-1 p-4 md:p-8 overflow-auto pb-20 md:pb-8">
+        {/* Mobile notification bell */}
+        <div className="flex justify-end mb-2 md:mb-0 md:absolute md:top-6 md:right-8 z-20">
+          <NotificationBell />
+        </div>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
