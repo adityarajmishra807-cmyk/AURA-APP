@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { RatingParticles } from "./RatingParticles";
+import { Coins } from "lucide-react";
 
 const prefersReducedMotion =
   typeof window !== "undefined" &&
@@ -215,12 +216,13 @@ export function AnimatedRatingBar({
       </div>
 
       {/* Value preview */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Rate this post
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          <Coins className="w-3 h-3 text-aura-gold" />
+          Rate
         </span>
         <motion.span
-          className="font-display text-lg md:text-xl font-bold tabular-nums"
+          className="font-display text-base font-bold tabular-nums flex items-center gap-1"
           style={{ color: currentColor }}
           key={localValue}
           initial={prefersReducedMotion ? false : { scale: 0.8 }}
@@ -228,13 +230,14 @@ export function AnimatedRatingBar({
           transition={{ type: "spring", stiffness: 400 }}
         >
           {localValue > 0 ? `+${localValue}` : localValue}
+          <Coins className="w-3 h-3 text-aura-gold" />
         </motion.span>
       </div>
 
       {/* Track */}
       <div
         ref={trackRef}
-        className="relative h-10 md:h-8 flex items-center cursor-pointer"
+        className="relative h-8 md:h-7 flex items-center cursor-pointer"
         style={{ touchAction: "pan-y" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -294,7 +297,7 @@ export function AnimatedRatingBar({
         <motion.div
           className={cn(
             "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10",
-            "w-7 h-7 md:w-6 md:h-6 rounded-full",
+            "w-6 h-6 md:w-5 md:h-5 rounded-full",
             "border-2 bg-background shadow-lg",
             "flex items-center justify-center",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

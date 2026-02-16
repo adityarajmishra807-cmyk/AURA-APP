@@ -7,10 +7,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FriendButton } from "./FriendButton";
 import { AnimatedRatingBar } from "./AnimatedRatingBar";
-import { Coins, Clock, Check } from "lucide-react";
+import { Coins, Clock, Check, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PostCardProps {
   post: {
@@ -42,7 +58,22 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [hasRated, setHasRated] = useState(userRating !== undefined && userRating !== null);
   const [ratedValue, setRatedValue] = useState(userRating);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const isOwnPost = user?.id === post.user_id;
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("posts").delete().eq("id", post.id);
+    if (error) {
+      toast.error("Failed to delete post");
+    } else {
+      toast.success("Post deleted");
+      onRated(); // triggers refresh
+    }
+    setDeleting(false);
+    setShowDeleteDialog(false);
+  };
 
   // Rating logic is now handled inline by AnimatedRatingBar's onCommit
 
@@ -87,6 +118,24 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             friendshipId={friendshipId}
             onStatusChange={onFriendChange}
           />
+        )}
+        {isOwnPost && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete post
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
@@ -183,6 +232,28 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           <span className="text-xs text-muted-foreground">Your post</span>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The post and all its ratings will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
