@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Coins, Flame, Crown, Medal } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
+import { Trophy, Coins, Flame, Crown, Medal, ChevronsUpDown, Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
@@ -32,6 +34,7 @@ export default function Leaderboard() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [collegeNames, setCollegeNames] = useState<Record<string, string>>({});
   const [selectedCollege, setSelectedCollege] = useState(profile?.college_id || "");
+  const [collegeOpen, setCollegeOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -117,16 +120,51 @@ export default function Leaderboard() {
           ))}
 
           {tab === "college" && (
-            <Select value={selectedCollege} onValueChange={setSelectedCollege}>
-              <SelectTrigger className="w-36 md:w-48 bg-muted/50 border-border/50 text-sm">
-                <SelectValue placeholder="Select college" />
-              </SelectTrigger>
-              <SelectContent>
-                {colleges.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={collegeOpen} onOpenChange={setCollegeOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={collegeOpen}
+                  className="w-48 md:w-64 justify-between bg-muted/50 border-border/50 text-sm truncate"
+                >
+                  <span className="truncate">
+                    {selectedCollege
+                      ? collegeNames[selectedCollege] || "Select college"
+                      : "Select college"}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 md:w-80 p-0 z-50 bg-popover" align="start">
+                <Command>
+                  <CommandInput placeholder="Search college..." />
+                  <CommandList className="max-h-60">
+                    <CommandEmpty>No college found.</CommandEmpty>
+                    <CommandGroup>
+                      {colleges.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={c.name}
+                          onSelect={() => {
+                            setSelectedCollege(c.id);
+                            setCollegeOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCollege === c.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="truncate">{c.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
 
