@@ -95,6 +95,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          participant_1: string
+          participant_2: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_1: string
+          participant_2: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_1?: string
+          participant_2?: string
+        }
+        Relationships: []
+      }
       friends: {
         Row: {
           addressee_id: string
@@ -121,6 +145,83 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          reply_to_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          reply_to_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          reply_to_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -397,6 +498,14 @@ export type Database = {
           streak_count: number
           username: string
         }[]
+      }
+      get_or_create_conversation: {
+        Args: { p_other_user_id: string }
+        Returns: string
+      }
+      is_conversation_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
       }
       log_abuse: {
         Args: {

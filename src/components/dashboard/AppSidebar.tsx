@@ -14,10 +14,12 @@ import {
   Flame,
   Coins,
   Gift,
+  MessageCircle,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
+  { label: "Chat", icon: MessageCircle, href: "/chat" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Referrals", icon: Gift, href: "/referrals" },

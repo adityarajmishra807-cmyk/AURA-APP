@@ -6,15 +6,15 @@ import {
   Trophy,
   Send,
   Gift,
-  Settings,
+  MessageCircle,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
+  { label: "Chat", icon: MessageCircle, href: "/chat" },
   { label: "Board", icon: Trophy, href: "/leaderboard" },
   { label: "Send", icon: Send, href: "/transfer" },
   { label: "Refer", icon: Gift, href: "/referrals" },
-  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function MobileBottomNav() {
