@@ -13,6 +13,7 @@ const typeIcons: Record<string, string> = {
   streak_milestone: "🔥",
   referral_reward: "🎁",
   post_reward: "✨",
+  new_message: "💬",
 };
 
 function NotificationItem({
