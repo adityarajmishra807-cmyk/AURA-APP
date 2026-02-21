@@ -117,30 +117,49 @@ export function ChatBubble({
         )}
 
         {/* Bubble */}
-        <motion.div
-          onClick={handleTap}
-          onContextMenu={(e) => { e.preventDefault(); setShowActions(true); }}
-          animate={tapped ? { scale: 1.01 } : { scale: 1 }}
-          transition={{ duration: 0.1 }}
-          className={cn(
-            "px-3.5 py-2 text-sm leading-relaxed relative cursor-pointer select-none transition-shadow duration-200",
-            isMine
-              ? "gradient-primary text-primary-foreground shadow-[0_2px_12px_hsl(var(--primary)/0.2)]"
-              : "bg-card/60 backdrop-blur-sm text-foreground border border-border/30",
-            tapped && (isMine ? "shadow-[0_4px_20px_hsl(var(--primary)/0.35)]" : "shadow-md")
-          )}
-          style={{ borderRadius }}
-        >
-          {message.content}
+        {(() => {
+          const isVoice = message.content.startsWith("🎤 Voice message\n");
+          const audioUrl = isVoice ? message.content.split("\n")[1] : null;
 
-          {/* Time */}
-          <span className={cn(
-            "text-[9px] ml-2 inline-block align-bottom",
-            isMine ? "text-primary-foreground/60" : "text-muted-foreground"
-          )}>
-            {format(new Date(message.created_at), "h:mm a")}
-          </span>
-        </motion.div>
+          return (
+            <motion.div
+              onClick={handleTap}
+              onContextMenu={(e) => { e.preventDefault(); setShowActions(true); }}
+              animate={tapped ? { scale: 1.01 } : { scale: 1 }}
+              transition={{ duration: 0.1 }}
+              className={cn(
+                "px-3.5 py-2 text-sm leading-relaxed relative cursor-pointer select-none transition-shadow duration-200",
+                isMine
+                  ? "gradient-primary text-primary-foreground shadow-[0_2px_12px_hsl(var(--primary)/0.2)]"
+                  : "bg-card/60 backdrop-blur-sm text-foreground border border-border/30",
+                tapped && (isMine ? "shadow-[0_4px_20px_hsl(var(--primary)/0.35)]" : "shadow-md")
+              )}
+              style={{ borderRadius }}
+            >
+              {isVoice && audioUrl ? (
+                <div className="flex items-center gap-2 min-w-[180px]">
+                  <span className="text-base">🎤</span>
+                  <audio
+                    src={audioUrl}
+                    controls
+                    className="h-8 flex-1 [&::-webkit-media-controls-panel]:bg-transparent"
+                    style={{ maxWidth: 200 }}
+                  />
+                </div>
+              ) : (
+                message.content
+              )}
+
+              {/* Time */}
+              <span className={cn(
+                "text-[9px] ml-2 inline-block align-bottom",
+                isMine ? "text-primary-foreground/60" : "text-muted-foreground"
+              )}>
+                {format(new Date(message.created_at), "h:mm a")}
+              </span>
+            </motion.div>
+          );
+        })()}
 
         {/* Reactions display */}
         {message.reactions && message.reactions.length > 0 && (

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useChatMessages } from "@/hooks/useChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, X, CornerDownLeft, ChevronDown, Smile } from "lucide-react";
+import { Send, X, CornerDownLeft, ChevronDown, Smile, Mic, Square } from "lucide-react";
+import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
@@ -24,6 +25,11 @@ export function ChatView() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [sending, setSending] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout>();
 
   // Fetch other user profile
   useEffect(() => {
@@ -87,6 +93,55 @@ export function ChatView() {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        clearInterval(recordingTimerRef.current);
+        setRecordingDuration(0);
+
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (blob.size < 1000) { toast.error("Recording too short"); return; }
+
+        setSending(true);
+        const fileName = `${user!.id}/${Date.now()}.webm`;
+        const { error: uploadErr } = await supabase.storage
+          .from("post-images")
+          .upload(fileName, blob, { contentType: "audio/webm" });
+
+        if (uploadErr) { toast.error("Failed to upload voice"); setSending(false); return; }
+
+        const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
+        await sendMessage(`🎤 Voice message\n${urlData.publicUrl}`);
+        setSending(false);
+        setIsScrolledUp(false);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingDuration(0);
+      recordingTimerRef.current = setInterval(() => setRecordingDuration((d) => d + 1), 1000);
+    } catch {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
   };
 
   // Group messages by date
@@ -256,11 +311,34 @@ export function ChatView() {
         "px-3 pb-4 pt-2 relative z-10 transition-opacity duration-300",
         isScrolledUp && "opacity-80"
       )}>
+        {/* Recording indicator */}
+        <AnimatePresence>
+          {isRecording && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 px-4 py-2 mb-2 rounded-xl bg-destructive/10 border border-destructive/20"
+            >
+              <motion.div
+                className="w-2.5 h-2.5 rounded-full bg-destructive"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              <span className="text-xs text-destructive font-medium">
+                Recording… {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, "0")}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className={cn(
           "flex items-end gap-2 px-2 py-1.5 rounded-2xl backdrop-blur-md border transition-all duration-300",
-          hasText
-            ? "bg-card/70 border-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.12)]"
-            : "bg-card/50 border-border/20"
+          isRecording
+            ? "bg-destructive/5 border-destructive/30"
+            : hasText
+              ? "bg-card/70 border-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.12)]"
+              : "bg-card/50 border-border/20"
         )}>
           {/* Emoji placeholder */}
           <button className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 mb-0.5">
@@ -272,14 +350,28 @@ export function ChatView() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Message…"
+            placeholder={isRecording ? "Recording voice…" : "Message…"}
             rows={1}
-            className="flex-1 bg-transparent border-none outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-2 max-h-28 scrollbar-none leading-relaxed"
+            disabled={isRecording}
+            className="flex-1 bg-transparent border-none outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-2 max-h-28 scrollbar-none leading-relaxed disabled:opacity-50"
             style={{ fieldSizing: "content" } as any}
           />
 
           <AnimatePresence mode="wait">
-            {hasText ? (
+            {isRecording ? (
+              <motion.button
+                key="stop"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                whileTap={{ scale: 0.88 }}
+                onClick={stopRecording}
+                className="w-9 h-9 rounded-xl bg-destructive flex items-center justify-center shrink-0 shadow-[0_2px_12px_hsl(var(--destructive)/0.35)] mb-0.5"
+              >
+                <Square className="w-3.5 h-3.5 text-white fill-white" />
+              </motion.button>
+            ) : hasText ? (
               <motion.button
                 key="send"
                 initial={{ scale: 0, opacity: 0, rotate: -20 }}
@@ -294,13 +386,18 @@ export function ChatView() {
                 <Send className="w-4 h-4 text-primary-foreground" />
               </motion.button>
             ) : (
-              <motion.div
-                key="placeholder"
+              <motion.button
+                key="mic"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
-                className="w-9 h-9 shrink-0 mb-0.5"
-              />
+                whileTap={{ scale: 0.88 }}
+                onClick={startRecording}
+                disabled={sending}
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mb-0.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-60"
+              >
+                <Mic className="w-4.5 h-4.5" />
+              </motion.button>
             )}
           </AnimatePresence>
         </div>
