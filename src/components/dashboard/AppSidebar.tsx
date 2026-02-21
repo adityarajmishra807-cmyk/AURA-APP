@@ -15,6 +15,7 @@ import {
   Coins,
   Gift,
   MessageCircle,
+  Download,
 } from "lucide-react";
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Referrals", icon: Gift, href: "/referrals" },
   { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Install App", icon: Download, href: "/install" },
 ];
 
 export function AppSidebar() {
