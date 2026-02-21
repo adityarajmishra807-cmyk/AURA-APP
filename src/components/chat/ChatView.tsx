@@ -171,7 +171,7 @@ export function ChatView() {
   const hasText = input.trim().length > 0;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-4rem)] relative overflow-hidden rounded-2xl">
+    <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-4rem)] relative overflow-hidden rounded-2xl">
       <AmbientBackground otherUser={otherUser} energy={energy} />
 
       {/* Subtle noise texture */}

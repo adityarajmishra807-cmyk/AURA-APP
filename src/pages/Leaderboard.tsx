@@ -85,7 +85,7 @@ export default function Leaderboard() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto pb-4 md:pb-0">
         <motion.div
           className="mb-4 md:mb-6"
           initial={{ opacity: 0, y: -10 }}
@@ -169,7 +169,7 @@ export default function Leaderboard() {
         </div>
 
         {/* Top 3 on mobile - stacked highlight cards */}
-        {!loading && entries.length >= 3 && (
+        {!loading && entries.length > 0 && entries.some((e) => isTopThree(e.rank)) && (
           <div className="md:hidden space-y-2 mb-4">
             {entries.filter((e) => isTopThree(e.rank)).map((entry) => (
               <motion.div
