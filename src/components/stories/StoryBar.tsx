@@ -63,18 +63,23 @@ export function StoryBar() {
             className="flex flex-col items-center gap-1.5 shrink-0"
             onClick={() => setCreateOpen(true)}
           >
-            <div className="relative w-[72px] h-[72px]">
-              {/* Leaf frame */}
-              <img src={storyFrame} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10" />
-              {/* Avatar centered inside */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Avatar className="w-11 h-11 rounded-full">
+            <div className="relative w-[76px] h-[76px]">
+              {/* Avatar behind frame */}
+              <div className="absolute inset-0 flex items-center justify-center z-0">
+                <Avatar className="w-[44px] h-[44px] rounded-full ring-2 ring-background">
                   <AvatarImage src={profile?.avatar_url || ""} />
                   <AvatarFallback className="bg-muted text-sm font-display font-bold">
                     {profile?.username?.[0]?.toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
               </div>
+              {/* Leaf wreath frame with center cutout */}
+              <img
+                src={storyFrame}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
+                style={{ mask: "radial-gradient(circle at center, transparent 38%, black 50%)", WebkitMask: "radial-gradient(circle at center, transparent 38%, black 50%)" }}
+              />
               <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
                 <Plus className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
@@ -106,8 +111,17 @@ export function StoryBar() {
                 }
               }}
             >
-              <div className="relative w-[72px] h-[72px]">
-                {/* Leaf frame */}
+              <div className="relative w-[76px] h-[76px]">
+                {/* Avatar behind frame */}
+                <div className="absolute inset-0 flex items-center justify-center z-0">
+                  <Avatar className="w-[44px] h-[44px] rounded-full ring-2 ring-background">
+                    <AvatarImage src={group.avatar_url || ""} />
+                    <AvatarFallback className="bg-muted text-sm font-display font-bold">
+                      {group.username[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                {/* Leaf wreath frame with center cutout */}
                 <img
                   src={storyFrame}
                   alt=""
@@ -117,16 +131,8 @@ export function StoryBar() {
                     group.hasUnviewed && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.3)]",
                     isHighTier && group.hasUnviewed && "animate-[pulse_3s_ease-in-out_infinite]"
                   )}
+                  style={{ mask: "radial-gradient(circle at center, transparent 38%, black 50%)", WebkitMask: "radial-gradient(circle at center, transparent 38%, black 50%)" }}
                 />
-                {/* Avatar centered */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Avatar className="w-11 h-11 rounded-full">
-                    <AvatarImage src={group.avatar_url || ""} />
-                    <AvatarFallback className="bg-muted text-sm font-display font-bold">
-                      {group.username[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
                 {/* Add button for own story */}
                 {isOwn && (
                   <div
