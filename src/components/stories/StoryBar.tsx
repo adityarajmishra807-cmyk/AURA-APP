@@ -63,10 +63,10 @@ export function StoryBar() {
             className="flex flex-col items-center gap-1.5 shrink-0"
             onClick={() => setCreateOpen(true)}
           >
-            <div className="relative w-[76px] h-[76px]">
+            <div className="relative w-[80px] h-[80px]">
               {/* Avatar behind frame */}
               <div className="absolute inset-0 flex items-center justify-center z-0">
-                <Avatar className="w-[44px] h-[44px] rounded-full ring-2 ring-background">
+                <Avatar className="w-[38px] h-[38px] rounded-full ring-2 ring-background">
                   <AvatarImage src={profile?.avatar_url || ""} />
                   <AvatarFallback className="bg-muted text-sm font-display font-bold">
                     {profile?.username?.[0]?.toUpperCase() || "?"}
@@ -109,10 +109,10 @@ export function StoryBar() {
                 }
               }}
             >
-              <div className="relative w-[76px] h-[76px]">
+              <div className="relative w-[80px] h-[80px]">
                 {/* Avatar behind frame */}
                 <div className="absolute inset-0 flex items-center justify-center z-0">
-                  <Avatar className="w-[44px] h-[44px] rounded-full ring-2 ring-background">
+                  <Avatar className="w-[38px] h-[38px] rounded-full ring-2 ring-background">
                     <AvatarImage src={group.avatar_url || ""} />
                     <AvatarFallback className="bg-muted text-sm font-display font-bold">
                       {group.username[0]?.toUpperCase()}
