@@ -534,6 +534,41 @@ export type Database = {
           },
         ]
       }
+      story_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rater_id: string
+          receiver_id: string
+          story_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rater_id: string
+          receiver_id: string
+          story_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rater_id?: string
+          receiver_id?: string
+          story_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_ratings_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_reactions: {
         Row: {
           created_at: string
@@ -675,6 +710,10 @@ export type Database = {
       register_referral: { Args: { p_referral_code: string }; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
+        Returns: Json
+      }
+      submit_story_rating: {
+        Args: { p_story_id: string; p_value: number }
         Returns: Json
       }
       transfer_aurix: {
