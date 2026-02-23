@@ -69,14 +69,20 @@ export function usePWAInstall() {
 
   const promptInstall = useCallback(async () => {
     if (!deferredPrompt) return false;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (outcome === "accepted") {
-      setInstalled(true);
-      return true;
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      if (outcome === "accepted") {
+        setInstalled(true);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Install prompt error:", err);
+      setDeferredPrompt(null);
+      return false;
     }
-    return false;
   }, [deferredPrompt]);
 
   const dismiss = useCallback(() => {
