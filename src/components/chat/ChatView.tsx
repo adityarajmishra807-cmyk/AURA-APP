@@ -234,11 +234,45 @@ export function ChatView() {
               </div>
 
               {group.messages.map((msg, i) => {
+                // Check for call system messages
+                if (msg.content.startsWith("__call:")) {
+                  const parts = msg.content.split(":");
+                  const status = parts[1]; // ended, missed, rejected
+                  const callType = parts[2]; // audio, video
+                  const duration = parts[3] || "";
+                  const isMine = msg.sender_id === user?.id;
+
+                  const icon = callType === "video" ? "📹" : "📞";
+                  let label = "";
+                  let color = "text-muted-foreground";
+                  if (status === "ended") {
+                    label = `${icon} ${callType === "video" ? "Video" : "Voice"} call · ${duration}`;
+                    color = "text-muted-foreground";
+                  } else if (status === "missed") {
+                    label = `${icon} Missed ${callType === "video" ? "video" : "voice"} call`;
+                    color = "text-destructive";
+                  } else if (status === "rejected") {
+                    label = `${icon} ${isMine ? "Call declined" : "Declined call"}`;
+                    color = "text-destructive/70";
+                  }
+
+                  return (
+                    <div key={msg.id} className="flex justify-center my-3">
+                      <span className={cn(
+                        "text-[11px] font-medium px-3 py-1 rounded-full bg-secondary/40 backdrop-blur-sm border border-border/20",
+                        color
+                      )}>
+                        {label}
+                      </span>
+                    </div>
+                  );
+                }
+
                 const isMine = msg.sender_id === user?.id;
                 const prevMsg = group.messages[i - 1];
                 const nextMsg = group.messages[i + 1];
-                const isFirstInGroup = !prevMsg || prevMsg.sender_id !== msg.sender_id;
-                const isLastInGroup = !nextMsg || nextMsg.sender_id !== msg.sender_id;
+                const isFirstInGroup = !prevMsg || prevMsg.sender_id !== msg.sender_id || prevMsg.content.startsWith("__call:");
+                const isLastInGroup = !nextMsg || nextMsg.sender_id !== msg.sender_id || nextMsg.content.startsWith("__call:");
                 const isLastMessage =
                   i === group.messages.length - 1 &&
                   group === groupedMessages[groupedMessages.length - 1];
