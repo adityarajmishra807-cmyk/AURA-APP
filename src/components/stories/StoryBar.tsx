@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ImagePlus, X } from "lucide-react";
+import { AuraLogo } from "@/components/ui/AuraLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStories, StoryGroup } from "@/hooks/useStories";
 import { StoryViewer } from "./StoryViewer";
@@ -70,11 +71,11 @@ export function StoryBar() {
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
-                <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+                <AuraLogo className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
             <span className="text-[10px] text-muted-foreground font-medium w-16 text-center truncate">
-              Your story
+              Aura Moment
             </span>
           </motion.button>
         )}
@@ -120,10 +121,10 @@ export function StoryBar() {
                 {/* Add button for own story */}
                 {isOwn && (
                   <div
-                    className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background"
+                    className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer"
                     onClick={(e) => { e.stopPropagation(); setCreateOpen(true); }}
                   >
-                    <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+                    <AuraLogo className="w-3.5 h-3.5 text-primary-foreground" />
                   </div>
                 )}
               </div>
@@ -131,7 +132,7 @@ export function StoryBar() {
                 "text-[10px] font-medium w-16 text-center truncate",
                 group.hasUnviewed ? "text-foreground" : "text-muted-foreground"
               )}>
-                {isOwn ? "Your story" : group.username}
+                {isOwn ? "Aura Moment" : group.username}
               </span>
             </motion.button>
           );
