@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import { StoryGroup } from "@/hooks/useStories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-const STORY_DURATION = 6000; // 6 seconds per story
+const STORY_DURATION = 6000;
 
 const REACTIONS = [
   { type: "fire", icon: Flame, label: "🔥" },
@@ -15,6 +17,10 @@ const REACTIONS = [
   { type: "zap", icon: Zap, label: "⚡" },
   { type: "star", icon: Star, label: "⭐" },
 ];
+
+interface ReactionCounts {
+  [key: string]: number;
+}
 
 interface StoryViewerProps {
   groups: StoryGroup[];
@@ -26,28 +32,68 @@ interface StoryViewerProps {
 }
 
 export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onReact, viewedStoryIds }: StoryViewerProps) {
+  const { user } = useAuth();
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
   const [storyIndex, setStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [reacted, setReacted] = useState<string | null>(null);
+  const [reactionCounts, setReactionCounts] = useState<ReactionCounts>({});
+  const [storyRating, setStoryRating] = useState<number | null>(null);
+  const [hasRated, setHasRated] = useState(false);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const timerRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
 
   const currentGroup = groups[groupIndex];
   const currentStory = currentGroup?.stories[storyIndex];
+  const isOwnStory = user && currentGroup?.user_id === user.id;
 
-  // Fetch view count for current story
+  // Fetch view count + reaction counts + existing rating for current story
   useEffect(() => {
     if (!currentStory) return;
+
+    // View count
     supabase
       .from("story_views")
       .select("id", { count: "exact", head: true })
       .eq("story_id", currentStory.id)
       .then(({ count }) => setViewCount(count || 0));
-  }, [currentStory?.id]);
+
+    // Reaction counts
+    supabase
+      .from("story_reactions")
+      .select("reaction_type")
+      .eq("story_id", currentStory.id)
+      .then(({ data }) => {
+        const counts: ReactionCounts = {};
+        data?.forEach((r: any) => {
+          counts[r.reaction_type] = (counts[r.reaction_type] || 0) + 1;
+        });
+        setReactionCounts(counts);
+      });
+
+    // Check if user already rated this story
+    if (user) {
+      supabase
+        .from("story_ratings")
+        .select("value")
+        .eq("story_id", currentStory.id)
+        .eq("rater_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setStoryRating(data.value);
+            setHasRated(true);
+          } else {
+            setStoryRating(null);
+            setHasRated(false);
+          }
+        });
+    }
+  }, [currentStory?.id, user]);
 
   // Mark as viewed
   useEffect(() => {
@@ -63,7 +109,6 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
       goNext();
     }, remaining);
 
-    // Animate progress
     const animate = () => {
       if (paused) return;
       const now = Date.now();
@@ -129,6 +174,35 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
     if (!currentStory) return;
     setReacted(type);
     onReact(currentStory.id, type);
+    setReactionCounts((prev) => ({
+      ...prev,
+      [type]: (prev[type] || 0) + 1,
+    }));
+  };
+
+  const handleStoryRating = async (value: number) => {
+    if (!currentStory || !user || hasRated || ratingSubmitting || isOwnStory) return;
+    setRatingSubmitting(true);
+    setPaused(true);
+
+    const { data } = await supabase.rpc("submit_story_rating", {
+      p_story_id: currentStory.id,
+      p_value: value,
+    });
+
+    setRatingSubmitting(false);
+    setPaused(false);
+
+    if (data && typeof data === "object" && "success" in data) {
+      const result = data as { success: boolean; error?: string; value?: number };
+      if (result.success) {
+        setStoryRating(value);
+        setHasRated(true);
+        toast.success(`Rated ${value > 0 ? "+" : ""}${value} AURIX`);
+      } else {
+        toast.error(result.error || "Failed to rate");
+      }
+    }
   };
 
   // Handle swipe down to close
@@ -143,6 +217,8 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
 
   if (!currentStory) return null;
 
+  const ratingValues = [-5, -3, -1, 1, 3, 5];
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -153,7 +229,6 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Story content area */}
       <div
         className="relative w-full h-full max-w-md mx-auto flex flex-col"
         onClick={handleTap}
@@ -206,6 +281,18 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
           </div>
         </div>
 
+        {/* Public reaction counts */}
+        {Object.keys(reactionCounts).length > 0 && (
+          <div className="absolute top-16 right-3 z-20 flex flex-col gap-1.5 safe-top">
+            {REACTIONS.filter((r) => reactionCounts[r.type]).map((r) => (
+              <div key={r.type} className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full px-2 py-0.5">
+                <span className="text-xs">{r.label}</span>
+                <span className="text-[10px] text-white/70 font-medium">{reactionCounts[r.type]}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Media */}
         <div className="flex-1 flex items-center justify-center overflow-hidden">
           {currentStory.media_type === "video" ? (
@@ -230,10 +317,47 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
 
         {/* Caption */}
         {currentStory.caption && (
-          <div className="absolute bottom-24 left-0 right-0 z-20 px-6">
+          <div className="absolute bottom-36 left-0 right-0 z-20 px-6">
             <p className="text-white/90 text-sm font-medium text-center leading-relaxed drop-shadow-lg">
               {currentStory.caption}
             </p>
+          </div>
+        )}
+
+        {/* AURIX Rating bar (only for other people's stories) */}
+        {!isOwnStory && (
+          <div className="absolute bottom-[72px] left-0 right-0 z-20 flex justify-center px-4">
+            {hasRated ? (
+              <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
+                <span className="text-[10px] text-white/50">Rated</span>
+                <span className={cn(
+                  "text-xs font-bold",
+                  storyRating && storyRating > 0 ? "text-green-400" : "text-red-400"
+                )}>
+                  {storyRating && storyRating > 0 ? "+" : ""}{storyRating} AURIX
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {ratingValues.map((v) => (
+                  <motion.button
+                    key={v}
+                    whileTap={{ scale: 1.2 }}
+                    disabled={ratingSubmitting}
+                    onClick={(e) => { e.stopPropagation(); handleStoryRating(v); }}
+                    className={cn(
+                      "h-8 min-w-[36px] rounded-full flex items-center justify-center text-[11px] font-bold backdrop-blur-md border transition-all",
+                      v > 0
+                        ? "bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
+                        : "bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30",
+                      ratingSubmitting && "opacity-50"
+                    )}
+                  >
+                    {v > 0 ? "+" : ""}{v}
+                  </motion.button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
