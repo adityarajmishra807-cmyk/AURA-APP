@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { useIncomingCall } from "@/hooks/useIncomingCall";
+import { IncomingCallModal } from "@/components/chat/IncomingCallModal";
 
 const pageVariants = {
   initial: { opacity: 0, y: 12, scale: 0.99 },
@@ -20,6 +22,7 @@ const pageTransition = {
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const { incomingCall, dismiss } = useIncomingCall();
 
   return (
     <div className="min-h-screen w-full gradient-aura flex flex-col md:flex-row">
@@ -43,6 +46,13 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         </AnimatePresence>
       </main>
       <MobileBottomNav />
+
+      {/* Global incoming call overlay */}
+      <AnimatePresence>
+        {incomingCall && (
+          <IncomingCallModal call={incomingCall} onDismiss={dismiss} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
