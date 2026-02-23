@@ -25,9 +25,16 @@ export default function ResetPassword() {
 
     // Check if we already have a recovery session from the URL hash
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
+    if (hash.includes("type=recovery") || hash.includes("access_token")) {
       setIsRecovery(true);
     }
+
+    // Also check if there's already an active session (user was redirected here by AuthContext)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsRecovery(true);
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
