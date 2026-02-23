@@ -74,7 +74,7 @@ export function StoryBar() {
                 <AuraLogo className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
-            <span className="text-[10px] text-muted-foreground font-medium w-16 text-center truncate">
+            <span className="text-[8px] text-muted-foreground font-medium w-16 text-center truncate">
               Aura Moment
             </span>
           </motion.button>
