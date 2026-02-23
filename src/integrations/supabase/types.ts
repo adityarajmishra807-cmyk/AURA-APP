@@ -95,6 +95,42 @@ export type Database = {
         }
         Relationships: []
       }
+      calls: {
+        Row: {
+          answer: Json | null
+          caller_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          offer: Json | null
+          receiver_id: string
+          status: string
+          type: string
+        }
+        Insert: {
+          answer?: Json | null
+          caller_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          offer?: Json | null
+          receiver_id: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          answer?: Json | null
+          caller_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          offer?: Json | null
+          receiver_id?: string
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
       colleges: {
         Row: {
           created_at: string
