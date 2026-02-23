@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 import {
   LayoutDashboard,
   Trophy,
@@ -25,25 +26,39 @@ const navItems = [
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Referrals", icon: Gift, href: "/referrals" },
   { label: "Settings", icon: Settings, href: "/settings" },
-  { label: "Install App", icon: Download, href: "/install" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { profile, signOut } = useAuth();
+  const { installed, isStandalone, deferredPrompt, promptInstall } = usePWAInstall();
+
+  const showInstallButton = !installed && !isStandalone;
 
   return (
     <aside className="hidden md:flex w-64 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border flex-col p-4 shrink-0">
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 px-3 mb-8">
-        <motion.div
-          className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center glow-sm"
-          whileHover={{ rotate: 15, scale: 1.1 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <Sparkles className="w-4 h-4 text-primary-foreground" />
-        </motion.div>
-        <span className="font-display text-xl font-bold text-gradient">Aura</span>
+      {/* Logo + Install */}
+      <div className="flex items-center justify-between px-3 mb-8">
+        <div className="flex items-center gap-2.5">
+          <motion.div
+            className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center glow-sm"
+            whileHover={{ rotate: 15, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Sparkles className="w-4 h-4 text-primary-foreground" />
+          </motion.div>
+          <span className="font-display text-xl font-bold text-gradient">Aura</span>
+        </div>
+
+        {showInstallButton && (
+          <Link
+            to="/install"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Install
+          </Link>
+        )}
       </div>
 
       {/* AURIX Display */}
