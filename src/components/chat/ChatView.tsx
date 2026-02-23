@@ -11,6 +11,7 @@ import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ChatBubble } from "./ChatBubble";
 import { ChatHeader } from "./ChatHeader";
 import { AmbientBackground } from "./AmbientBackground";
+import { EmojiPicker } from "./EmojiPicker";
 
 export function ChatView() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -30,6 +31,7 @@ export function ChatView() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout>();
+  const [showEmoji, setShowEmoji] = useState(false);
 
   // Fetch other user profile
   useEffect(() => {
@@ -374,10 +376,23 @@ export function ChatView() {
               ? "bg-card/70 border-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.12)]"
               : "bg-card/50 border-border/20"
         )}>
-          {/* Emoji placeholder */}
-          <button className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 mb-0.5">
-            <Smile className="w-4.5 h-4.5" />
-          </button>
+          {/* Emoji picker */}
+          <div className="relative shrink-0 mb-0.5">
+            <button
+              onClick={() => setShowEmoji((v) => !v)}
+              className={cn(
+                "w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors",
+                showEmoji && "text-primary"
+              )}
+            >
+              <Smile className="w-4.5 h-4.5" />
+            </button>
+            <EmojiPicker
+              isOpen={showEmoji}
+              onClose={() => setShowEmoji(false)}
+              onSelect={(emoji) => setInput((prev) => prev + emoji)}
+            />
+          </div>
 
           <textarea
             ref={inputRef}
