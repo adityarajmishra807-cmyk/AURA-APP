@@ -161,9 +161,16 @@ export function useWebRTC() {
       cleanup();
     });
 
-    channel.subscribe();
     channelRef.current = channel;
-    return channel;
+    
+    // Return a promise that resolves when the channel is fully subscribed
+    return new Promise<typeof channel>((resolve) => {
+      channel.subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          resolve(channel);
+        }
+      });
+    });
   }, [user, cleanup]);
 
   // CALLER: initiate call
@@ -195,8 +202,8 @@ export function useWebRTC() {
         remoteUserId: receiverId,
       });
 
-      // Setup signaling
-      const channel = setupChannel(call.id);
+      // Setup signaling (wait for subscription)
+      const channel = await setupChannel(call.id);
 
       // Create peer connection
       const pc = createPeerConnection(call.id);
@@ -248,8 +255,8 @@ export function useWebRTC() {
 
       setCallState((s) => ({ ...s, status: "connecting" }));
 
-      // Setup signaling
-      setupChannel(callId);
+      // Setup signaling (wait for subscription)
+      await setupChannel(callId);
 
       // Create peer connection
       const pc = createPeerConnection(callId);
