@@ -72,6 +72,14 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Standalone PWA viewport fix */
+  @media all and (display-mode: standalone) {
+    body {
+      min-height: 100dvh;
+      overscroll-behavior-y: contain;
+    }
+  }
 }
 
 @layer utilities {

@@ -2,23 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aura - Social Currency</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <title>Aura — Rate. Post. Rise.</title>
     <meta name="description" content="Rate, earn AURIX, and climb the social leaderboard" />
-    <meta name="author" content="Aura" />
-    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="theme-color" content="#7C3AED" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aura" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#0B0B1F" />
     <link rel="apple-touch-icon" href="/pwa-192.png" />
-    <meta name="author" content="Lovable" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <meta property="og:title" content="Aura — Rate. Post. Rise." />
+    <meta property="og:description" content="Rate, earn AURIX, and climb the social leaderboard" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
+    <meta name="twitter:site" content="@Aura" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <style>
+      /* Prevent white flash on load */
+      html, body { background: #0B0B1F; }
+      /* Standalone mode overscroll prevention */
+      @media all and (display-mode: standalone) {
+        html { overscroll-behavior: none; }
+        body { overscroll-behavior-y: contain; }
+      }
+    </style>
   </head>
 
   <body>
