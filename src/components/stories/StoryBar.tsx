@@ -76,7 +76,8 @@ export function StoryBar() {
               <img
                 src={storyFrame}
                 alt=""
-                className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10 drop-shadow-[0_2px_6px_hsl(var(--primary)/0.4)] mix-blend-screen"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10 drop-shadow-[0_2px_6px_hsl(var(--primary)/0.4)]"
+                style={{ mask: "radial-gradient(circle, transparent 36%, black 42%, black 82%, transparent 88%)", WebkitMask: "radial-gradient(circle, transparent 36%, black 42%, black 82%, transparent 88%)" }}
               />
               <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
                 <Plus className="w-3.5 h-3.5 text-primary-foreground" />
@@ -123,11 +124,12 @@ export function StoryBar() {
                   src={storyFrame}
                   alt=""
                   className={cn(
-                    "absolute inset-0 w-full h-full object-contain pointer-events-none z-10 transition-all duration-300 mix-blend-screen",
+                    "absolute inset-0 w-full h-full object-contain pointer-events-none z-10 transition-all duration-300",
                     !group.hasUnviewed && "opacity-40 grayscale",
                     group.hasUnviewed && "drop-shadow-[0_2px_6px_hsl(var(--primary)/0.4)]",
                     isHighTier && group.hasUnviewed && "animate-[pulse_3s_ease-in-out_infinite]"
                   )}
+                  style={{ mask: "radial-gradient(circle, transparent 36%, black 42%, black 82%, transparent 88%)", WebkitMask: "radial-gradient(circle, transparent 36%, black 42%, black 82%, transparent 88%)" }}
                 />
                 {/* Add button for own story */}
                 {isOwn && (
