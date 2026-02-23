@@ -64,12 +64,16 @@ export function StoryBar() {
             onClick={() => setCreateOpen(true)}
           >
             <div className="relative">
-              <Avatar className="w-16 h-16 border-2 border-border/30">
-                <AvatarImage src={profile?.avatar_url || ""} />
-                <AvatarFallback className="bg-muted text-lg font-display font-bold">
-                  {profile?.username?.[0]?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
+              <div className="w-[68px] h-[68px] p-[2.5px] bg-gradient-to-br from-primary to-primary/60" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
+                <div className="w-full h-full bg-background p-[2px]" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
+                  <Avatar className="w-full h-full" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
+                    <AvatarImage src={profile?.avatar_url || ""} />
+                    <AvatarFallback className="bg-muted text-lg font-display font-bold">
+                      {profile?.username?.[0]?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
                 <AuraStar className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
@@ -104,13 +108,13 @@ export function StoryBar() {
               <div className="relative">
                 {/* Gradient ring */}
                 <div className={cn(
-                  "w-[68px] h-[68px] rounded-full p-[2.5px] bg-gradient-to-br transition-all duration-300",
+                  "w-[68px] h-[68px] p-[2.5px] bg-gradient-to-br transition-all duration-300",
                   ringGradient,
-                  group.hasUnviewed && "shadow-[0_0_12px_hsl(var(--primary)/0.3)]",
+                  group.hasUnviewed && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.3)]",
                   isHighTier && group.hasUnviewed && "animate-[pulse_3s_ease-in-out_infinite]"
-                )}>
-                  <div className="w-full h-full rounded-full p-[2px] bg-background">
-                    <Avatar className="w-full h-full">
+                )} style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
+                  <div className="w-full h-full bg-background p-[2px]" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
+                    <Avatar className="w-full h-full" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
                       <AvatarImage src={group.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-lg font-display font-bold">
                         {group.username[0]?.toUpperCase()}
