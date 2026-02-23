@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ImagePlus, X } from "lucide-react";
-import { AuraStar } from "@/components/ui/AuraStar";
+import { Plus } from "lucide-react";
+import storyFrame from "@/assets/story-frame.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStories, StoryGroup } from "@/hooks/useStories";
 import { StoryViewer } from "./StoryViewer";
@@ -63,19 +63,20 @@ export function StoryBar() {
             className="flex flex-col items-center gap-1.5 shrink-0"
             onClick={() => setCreateOpen(true)}
           >
-            <div className="relative">
-              <div className="w-[68px] h-[68px] p-[2.5px] bg-gradient-to-br from-primary to-primary/60" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                <div className="w-full h-full bg-background p-[2px]" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                  <Avatar className="w-full h-full" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                    <AvatarImage src={profile?.avatar_url || ""} />
-                    <AvatarFallback className="bg-muted text-lg font-display font-bold">
-                      {profile?.username?.[0]?.toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+            <div className="relative w-[72px] h-[72px]">
+              {/* Leaf frame */}
+              <img src={storyFrame} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10" />
+              {/* Avatar centered inside */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Avatar className="w-11 h-11 rounded-full">
+                  <AvatarImage src={profile?.avatar_url || ""} />
+                  <AvatarFallback className="bg-muted text-sm font-display font-bold">
+                    {profile?.username?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
-                <AuraStar className="w-3.5 h-3.5 text-primary-foreground" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
+                <Plus className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
             <span className="text-[8px] text-muted-foreground font-medium w-16 text-center truncate">
@@ -105,30 +106,34 @@ export function StoryBar() {
                 }
               }}
             >
-              <div className="relative">
-                {/* Gradient ring */}
-                <div className={cn(
-                  "w-[68px] h-[68px] p-[2.5px] bg-gradient-to-br transition-all duration-300",
-                  ringGradient,
-                  group.hasUnviewed && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.3)]",
-                  isHighTier && group.hasUnviewed && "animate-[pulse_3s_ease-in-out_infinite]"
-                )} style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                  <div className="w-full h-full bg-background p-[2px]" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                    <Avatar className="w-full h-full" style={{ clipPath: "polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%)" }}>
-                      <AvatarImage src={group.avatar_url || ""} />
-                      <AvatarFallback className="bg-muted text-lg font-display font-bold">
-                        {group.username[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
+              <div className="relative w-[72px] h-[72px]">
+                {/* Leaf frame */}
+                <img
+                  src={storyFrame}
+                  alt=""
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover pointer-events-none z-10 transition-all duration-300",
+                    !group.hasUnviewed && "opacity-40 grayscale",
+                    group.hasUnviewed && "drop-shadow-[0_0_8px_hsl(var(--primary)/0.3)]",
+                    isHighTier && group.hasUnviewed && "animate-[pulse_3s_ease-in-out_infinite]"
+                  )}
+                />
+                {/* Avatar centered */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Avatar className="w-11 h-11 rounded-full">
+                    <AvatarImage src={group.avatar_url || ""} />
+                    <AvatarFallback className="bg-muted text-sm font-display font-bold">
+                      {group.username[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 {/* Add button for own story */}
                 {isOwn && (
                   <div
-                    className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer"
+                    className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer z-20"
                     onClick={(e) => { e.stopPropagation(); setCreateOpen(true); }}
                   >
-                    <AuraStar className="w-3.5 h-3.5 text-primary-foreground" />
+                    <Plus className="w-3.5 h-3.5 text-primary-foreground" />
                   </div>
                 )}
               </div>
