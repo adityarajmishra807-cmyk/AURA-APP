@@ -1,11 +1,26 @@
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Download, Monitor, Smartphone, CheckCircle2, Share, Plus, Chrome, Globe } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { toast } from "sonner";
 
 export default function Install() {
-  const { installed, isStandalone, isIOSSafari, deferredPrompt, promptInstall } = usePWAInstall();
+  const { installed, isStandalone, deferredPrompt, promptInstall } = usePWAInstall();
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      try {
+        const accepted = await promptInstall();
+        if (accepted) {
+          toast.success("Aura installed successfully!");
+        }
+      } catch {
+        toast.error("Installation failed. Try using your browser's install option.");
+      }
+    } else {
+      toast.info("Use your browser's menu to install Aura. See instructions below.");
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -58,17 +73,15 @@ export default function Install() {
               </motion.div>
             ) : (
               <div className="space-y-4">
-                {/* Android / Chrome install */}
-                {deferredPrompt && (
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={promptInstall}
-                    className="w-full py-4 rounded-2xl gradient-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-[0_4px_24px_hsl(var(--primary)/0.4)] mb-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    Install Aura
-                  </motion.button>
-                )}
+                {/* Install button — always visible */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleInstall}
+                  className="w-full py-4 rounded-2xl gradient-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-[0_4px_24px_hsl(var(--primary)/0.4)] mb-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Install Aura
+                </motion.button>
 
                 {/* iOS Safari instructions */}
                 <div className="p-4 rounded-2xl bg-secondary/30 border border-border/20 space-y-3">
