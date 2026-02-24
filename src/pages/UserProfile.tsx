@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FriendButton } from "@/components/feed/FriendButton";
 import { PostCard } from "@/components/feed/PostCard";
-import { Coins, Flame, TrendingUp, Calendar, Sparkles } from "lucide-react";
+import { Coins, Flame, TrendingUp, Calendar, Sparkles, Award } from "lucide-react";
+import { BadgeDisplay } from "@/components/badges/BadgeDisplay";
 
 interface UserProfileData {
   user_id: string;
@@ -255,6 +256,20 @@ export default function UserProfile() {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Best</p>
             </div>
           </div>
+        </motion.div>
+
+        {/* Achievements section */}
+        <motion.div
+          className="glass-card rounded-2xl p-5 md:p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Award className="w-4 h-4 text-primary" />
+            <h2 className="font-display text-lg font-bold text-foreground">Achievements</h2>
+          </div>
+          <BadgeDisplay userId={profileData.user_id} />
         </motion.div>
 
         {/* Posts section */}

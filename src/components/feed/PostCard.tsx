@@ -10,6 +10,7 @@ import { AnimatedRatingBar } from "./AnimatedRatingBar";
 import { Coins, Clock, Check, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { CommentSection } from "./CommentSection";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -328,6 +329,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             <span className="text-xs text-muted-foreground">Your post</span>
           </div>
         )}
+
+        {/* Comments */}
+        <CommentSection postId={post.id} />
       </div>
 
       {/* Delete confirmation dialog */}
