@@ -20,6 +20,7 @@ import ChatRoom from "./pages/ChatRoom";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Install from "./pages/Install";
+import Achievements from "./pages/Achievements";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/chat/:conversationId" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
             <Route path="/profile/:username" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/install" element={<ProtectedRoute><Install /></ProtectedRoute>} />
+            <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
