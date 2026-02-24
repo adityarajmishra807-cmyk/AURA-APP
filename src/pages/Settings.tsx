@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, Gift, Download, LogOut, Flame, Award } from "lucide-react";
+import { Camera, Save, Gift, Download, LogOut, Flame, Award, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 interface College {
@@ -208,11 +208,11 @@ export default function Settings() {
           </Button>
 
           {/* Quick links */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <Link to="/referrals">
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <Link to="/shop">
               <Button variant="outline" className="w-full h-11 gap-2">
-                <Gift className="w-4 h-4" />
-                Referrals
+                <ShoppingBag className="w-4 h-4" />
+                AURIX Shop
               </Button>
             </Link>
             <Link to="/achievements">
@@ -221,10 +221,16 @@ export default function Settings() {
                 Badges
               </Button>
             </Link>
+            <Link to="/referrals">
+              <Button variant="outline" className="w-full h-11 gap-2">
+                <Gift className="w-4 h-4" />
+                Referrals
+              </Button>
+            </Link>
             <Link to="/install">
               <Button variant="outline" className="w-full h-11 gap-2">
                 <Download className="w-4 h-4" />
-                Install
+                Install App
               </Button>
             </Link>
           </div>
