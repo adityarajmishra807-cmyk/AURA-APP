@@ -5,8 +5,8 @@ import {
   LayoutDashboard,
   Trophy,
   Send,
-  Gift,
   MessageCircle,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -14,7 +14,7 @@ const navItems = [
   { label: "Chat", icon: MessageCircle, href: "/chat" },
   { label: "Board", icon: Trophy, href: "/leaderboard" },
   { label: "Send", icon: Send, href: "/transfer" },
-  { label: "Refer", icon: Gift, href: "/referrals" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function MobileBottomNav() {

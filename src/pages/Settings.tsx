@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save } from "lucide-react";
+import { Camera, Save, Gift, Download, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 interface College {
@@ -174,6 +175,31 @@ export default function Settings() {
                 Save Changes
               </>
             )}
+          </Button>
+
+          {/* Quick links */}
+          <div className="flex gap-3 pt-2">
+            <Link to="/referrals" className="flex-1">
+              <Button variant="outline" className="w-full h-11 gap-2">
+                <Gift className="w-4 h-4" />
+                Referrals
+              </Button>
+            </Link>
+            <Link to="/install" className="flex-1">
+              <Button variant="outline" className="w-full h-11 gap-2">
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            </Link>
+          </div>
+
+          <Button
+            variant="ghost"
+            className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => supabase.auth.signOut()}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
         </motion.div>
       </div>
