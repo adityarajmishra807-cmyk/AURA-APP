@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, Gift, Download, LogOut } from "lucide-react";
+import { Camera, Save, Gift, Download, LogOut, Flame } from "lucide-react";
 import { toast } from "sonner";
 
 interface College {
@@ -93,10 +93,40 @@ export default function Settings() {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
+        {/* Profile Quick View */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="glass-card rounded-2xl p-5 mb-4 flex items-center gap-4"
+        >
+          <Avatar className="w-16 h-16 border-2 border-primary/30">
+            <AvatarImage src={profile?.avatar_url || ""} />
+            <AvatarFallback className="bg-muted text-xl font-display font-bold">
+              {profile?.username?.[0]?.toUpperCase() || "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-display text-lg font-bold text-foreground truncate">
+              @{profile?.username}
+            </h2>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Flame className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">
+                {profile?.aurix_balance?.toLocaleString() ?? 0}
+              </span>
+              <span className="text-xs text-muted-foreground">AURIX</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+              <span>🔥 {profile?.streak_count ?? 0} day streak</span>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-4"
         >
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">Update your profile</p>
