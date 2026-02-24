@@ -11,6 +11,7 @@ import { Coins, Clock, Check, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CommentSection } from "./CommentSection";
+import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -67,7 +68,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [deleting, setDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const isOwnPost = user?.id === post.user_id;
-
+  const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
   const tilt = use3DTilt({ maxTilt: isMobile ? 0 : 6, scale: isMobile ? 1 : 1.015, speed: 350 });
 
@@ -151,7 +152,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
         <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
           <Link to={`/profile/${post.profiles.username}`}>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 500 }}>
-              <Avatar className="w-9 h-9 md:w-10 md:h-10 border border-border tap-scale">
+              <Avatar className={cn("w-9 h-9 md:w-10 md:h-10 border border-border tap-scale", cosmetics.frame)}>
                 <AvatarImage src={post.profiles.avatar_url || ""} />
                 <AvatarFallback className="bg-muted font-display font-bold text-xs md:text-sm">
                   {post.profiles.username?.[0]?.toUpperCase()}
@@ -161,7 +162,8 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           </Link>
           <div className="flex-1 min-w-0 mr-1">
             <div className="flex items-center gap-1.5 md:gap-2">
-              <Link to={`/profile/${post.profiles.username}`} className="text-sm font-semibold text-foreground tap-scale">@{post.profiles.username}</Link>
+              <Link to={`/profile/${post.profiles.username}`} className={cn("text-sm font-semibold tap-scale", cosmetics.nameColor || "text-foreground")}>@{post.profiles.username}</Link>
+              {cosmetics.badge && <span className="text-sm">{cosmetics.badge}</span>}
               <motion.div
                 className="flex items-center gap-0.5"
                 whileHover={{ scale: 1.1, y: -1 }}

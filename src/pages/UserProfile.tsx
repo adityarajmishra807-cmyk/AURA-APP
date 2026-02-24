@@ -9,6 +9,8 @@ import { FriendButton } from "@/components/feed/FriendButton";
 import { PostCard } from "@/components/feed/PostCard";
 import { Coins, Flame, TrendingUp, Calendar, Sparkles, Award } from "lucide-react";
 import { BadgeDisplay } from "@/components/badges/BadgeDisplay";
+import { useCosmetics } from "@/hooks/useCosmetics";
+import { cn } from "@/lib/utils";
 
 interface UserProfileData {
   user_id: string;
@@ -138,6 +140,7 @@ export default function UserProfile() {
   }, [profileData, fetchPosts, fetchRatings, fetchFriendship]);
 
   const isOwnProfile = user?.id === profileData?.user_id;
+  const { cosmetics } = useCosmetics(profileData?.user_id);
   const joinDate = profileData ? new Date(profileData.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "";
 
   if (loading) {
@@ -177,12 +180,12 @@ export default function UserProfile() {
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Profile header */}
         <motion.div
-          className="glass-card rounded-2xl p-5 md:p-8"
+          className={cn("glass-card rounded-2xl p-5 md:p-8", cosmetics.theme)}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-start gap-4 md:gap-6">
-            <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2 border-border shrink-0">
+            <Avatar className={cn("w-16 h-16 md:w-20 md:h-20 border-2 border-border shrink-0", cosmetics.frame)}>
               <AvatarImage src={profileData.avatar_url || ""} />
               <AvatarFallback className="bg-muted text-xl md:text-2xl font-display font-bold">
                 {profileData.username[0]?.toUpperCase()}
@@ -191,9 +194,10 @@ export default function UserProfile() {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">
+                <h1 className={cn("font-display text-xl md:text-2xl font-bold", cosmetics.nameColor || "text-foreground")}>
                   @{profileData.username}
                 </h1>
+                {cosmetics.badge && <span className="text-xl">{cosmetics.badge}</span>}
                 {!isOwnProfile && (
                   <FriendButton
                     targetUserId={profileData.user_id}

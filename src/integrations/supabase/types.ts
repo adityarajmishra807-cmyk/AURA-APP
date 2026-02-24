@@ -422,6 +422,10 @@ export type Database = {
           college_changed_at: string | null
           college_id: string | null
           created_at: string
+          equipped_badge: string | null
+          equipped_frame: string | null
+          equipped_name_color: string | null
+          equipped_theme: string | null
           highest_streak: number
           id: string
           last_login_date: string | null
@@ -442,6 +446,10 @@ export type Database = {
           college_changed_at?: string | null
           college_id?: string | null
           created_at?: string
+          equipped_badge?: string | null
+          equipped_frame?: string | null
+          equipped_name_color?: string | null
+          equipped_theme?: string | null
           highest_streak?: number
           id?: string
           last_login_date?: string | null
@@ -462,6 +470,10 @@ export type Database = {
           college_changed_at?: string | null
           college_id?: string | null
           created_at?: string
+          equipped_badge?: string | null
+          equipped_frame?: string | null
+          equipped_name_color?: string | null
+          equipped_theme?: string | null
           highest_streak?: number
           id?: string
           last_login_date?: string | null
@@ -477,6 +489,34 @@ export type Database = {
             columns: ["college_id"]
             isOneToOne: false
             referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_badge_fkey"
+            columns: ["equipped_badge"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_frame_fkey"
+            columns: ["equipped_frame"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_name_color_fkey"
+            columns: ["equipped_name_color"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_theme_fkey"
+            columns: ["equipped_theme"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
             referencedColumns: ["id"]
           },
         ]
@@ -555,6 +595,48 @@ export type Database = {
           stage_2_rewarded?: boolean
           stage_3_completed?: boolean
           stage_3_rewarded?: boolean
+        }
+        Relationships: []
+      }
+      shop_items: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          description: string
+          duration_days: number | null
+          id: string
+          is_permanent: boolean
+          name: string
+          preview_value: string
+          price: number
+          rarity: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          description: string
+          duration_days?: number | null
+          id?: string
+          is_permanent?: boolean
+          name: string
+          preview_value: string
+          price: number
+          rarity?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          description?: string
+          duration_days?: number | null
+          id?: string
+          is_permanent?: boolean
+          name?: string
+          preview_value?: string
+          price?: number
+          rarity?: string
         }
         Relationships: []
       }
@@ -748,6 +830,38 @@ export type Database = {
           },
         ]
       }
+      user_purchases: {
+        Row: {
+          expires_at: string | null
+          id: string
+          item_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          id?: string
+          item_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          id?: string
+          item_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -761,6 +875,7 @@ export type Database = {
         Args: { p_referral_id: string; p_stage: number }
         Returns: Json
       }
+      equip_shop_item: { Args: { p_item_id: string }; Returns: Json }
       get_college_leaderboard: {
         Args: { p_college_id: string; p_limit?: number }
         Returns: {
@@ -799,6 +914,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      purchase_shop_item: { Args: { p_item_id: string }; Returns: Json }
       register_referral: { Args: { p_referral_code: string }; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
@@ -812,6 +928,7 @@ export type Database = {
         Args: { p_amount: number; p_receiver_username: string }
         Returns: Json
       }
+      unequip_shop_item: { Args: { p_category: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
