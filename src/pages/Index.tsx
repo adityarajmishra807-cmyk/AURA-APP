@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PostFeed } from "@/components/feed/PostFeed";
 import { ParallaxBackground } from "@/components/feed/ParallaxBackground";
+import { FloatingParticles } from "@/components/feed/FloatingParticles";
 import { StreakClaimer } from "@/components/StreakClaimer";
 import { StoryBar } from "@/components/stories/StoryBar";
 import { UserSearch } from "@/components/feed/UserSearch";
@@ -30,6 +31,7 @@ const Index = () => {
       <StreakClaimer />
       <div className="relative max-w-3xl mx-auto">
         <ParallaxBackground />
+        <FloatingParticles />
         {/* Content layer — above parallax */}
         <div className="relative z-10">
         {/* Header */}
