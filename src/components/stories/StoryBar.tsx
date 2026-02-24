@@ -78,7 +78,7 @@ export function StoryBar() {
                 alt=""
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10 mix-blend-multiply drop-shadow-[0_2px_6px_hsl(var(--primary)/0.4)]"
               />
-              <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
+              <div className="absolute bottom-2 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
                 <Plus className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
@@ -132,7 +132,7 @@ export function StoryBar() {
                 {/* Add button for own story */}
                 {isOwn && (
                   <div
-                    className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer z-20"
+                    className="absolute bottom-2 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer z-20"
                     onClick={(e) => { e.stopPropagation(); setCreateOpen(true); }}
                   >
                     <Plus className="w-3.5 h-3.5 text-primary-foreground" />
