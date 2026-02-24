@@ -5,6 +5,7 @@ import { PostFeed } from "@/components/feed/PostFeed";
 import { ParallaxBackground } from "@/components/feed/ParallaxBackground";
 import { StreakClaimer } from "@/components/StreakClaimer";
 import { StoryBar } from "@/components/stories/StoryBar";
+import { UserSearch } from "@/components/feed/UserSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
 
@@ -42,6 +43,16 @@ const Index = () => {
             Welcome, <span className="text-gradient">{profile?.username}</span> ✨
           </h1>
           <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Rate, post, and rise.</p>
+        </motion.div>
+
+        {/* User Search */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mb-3"
+        >
+          <UserSearch />
         </motion.div>
 
         {/* Stories */}
