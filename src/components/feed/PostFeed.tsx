@@ -5,8 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
 import { PullToRefresh } from "./PullToRefresh";
-import { Sparkles, RefreshCw, Users, Globe } from "lucide-react";
+import { Sparkles, RefreshCw, Users, Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface PostWithProfile {
   id: string;
@@ -24,17 +25,23 @@ interface PostWithProfile {
 
 type FeedFilter = "all" | "friends" | "mine";
 
+const PAGE_SIZE = 20;
+
 export function PostFeed() {
   const { user } = useAuth();
+  const { checkAchievements } = useAchievements();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [colleges, setColleges] = useState<Record<string, string>>({});
   const [friendIds, setFriendIds] = useState<string[]>([]);
   const [friendships, setFriendships] = useState<Record<string, { status: string; id: string; direction: "sent" | "received" }>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<FeedFilter>("all");
   const [newPostCount, setNewPostCount] = useState(0);
   const channelRef = useRef<any>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const fetchFriends = useCallback(async () => {
     if (!user) return;
@@ -57,22 +64,34 @@ export function PostFeed() {
     }
   }, [user]);
 
-  const fetchPosts = useCallback(async () => {
-    const { data, error } = await supabase
+  const fetchPosts = useCallback(async (cursor?: string) => {
+    let query = supabase
       .from("posts")
       .select("id, content, image_url, created_at, user_id, profiles!posts_user_id_fkey(username, avatar_url, aurix_balance, college_id)")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(PAGE_SIZE);
+
+    if (cursor) {
+      query = query.lt("created_at", cursor);
+    }
+
+    const { data, error } = await query;
 
     if (!error && data) {
       const mapped = data.map((p: any) => ({
         ...p,
         profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
       }));
-      setPosts(mapped);
-      setNewPostCount(0);
+      if (cursor) {
+        setPosts((prev) => [...prev, ...mapped]);
+      } else {
+        setPosts(mapped);
+        setNewPostCount(0);
+      }
+      setHasMore(data.length === PAGE_SIZE);
     }
     setLoading(false);
+    setLoadingMore(false);
   }, []);
 
   const fetchUserRatings = useCallback(async () => {
@@ -126,11 +145,33 @@ export function PostFeed() {
     };
   }, [fetchPosts, fetchUserRatings, fetchColleges, fetchFriends, user]);
 
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          const lastPost = posts[posts.length - 1];
+          if (lastPost) {
+            setLoadingMore(true);
+            fetchPosts(lastPost.created_at);
+          }
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loading, posts, fetchPosts]);
+
   const handleRefresh = useCallback(async () => {
+    setHasMore(true);
     await Promise.all([fetchPosts(), fetchUserRatings(), fetchFriends()]);
-  }, [fetchPosts, fetchUserRatings, fetchFriends]);
+    checkAchievements();
+  }, [fetchPosts, fetchUserRatings, fetchFriends, checkAchievements]);
 
   const handleLoadNew = () => {
+    setHasMore(true);
     fetchPosts();
     fetchUserRatings();
     toast.success("Feed updated!");
@@ -264,6 +305,17 @@ export function PostFeed() {
             </motion.div>
           ))}
         </AnimatePresence>
+      )}
+
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="h-1" />
+      {loadingMore && (
+        <div className="flex justify-center py-4">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
+      )}
+      {!hasMore && displayedPosts.length > 0 && (
+        <p className="text-center text-xs text-muted-foreground py-4">You've reached the end ✨</p>
       )}
     </div>
     </PullToRefresh>
