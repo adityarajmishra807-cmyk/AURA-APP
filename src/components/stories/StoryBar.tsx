@@ -66,7 +66,7 @@ export function StoryBar() {
             <div className="relative w-[120px] h-[120px]">
               {/* Avatar behind frame */}
               <div className="absolute inset-0 flex items-center justify-center z-0">
-                <Avatar className="w-[58px] h-[58px] rounded-full ring-2 ring-background">
+                <Avatar className="w-[48px] h-[48px] rounded-full ring-2 ring-background">
                   <AvatarImage src={profile?.avatar_url || ""} />
                   <AvatarFallback className="bg-muted text-sm font-display font-bold">
                     {profile?.username?.[0]?.toUpperCase() || "?"}
@@ -112,7 +112,7 @@ export function StoryBar() {
               <div className="relative w-[120px] h-[120px]">
                 {/* Avatar behind frame */}
                 <div className="absolute inset-0 flex items-center justify-center z-0">
-                  <Avatar className="w-[58px] h-[58px] rounded-full ring-2 ring-background">
+                  <Avatar className="w-[48px] h-[48px] rounded-full ring-2 ring-background">
                     <AvatarImage src={group.avatar_url || ""} />
                     <AvatarFallback className="bg-muted text-sm font-display font-bold">
                       {group.username[0]?.toUpperCase()}
