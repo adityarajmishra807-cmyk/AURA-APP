@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus } from "lucide-react";
+import { AuraLogo } from "@/components/ui/AuraLogo";
 import storyFrame from "@/assets/story-frame.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStories, StoryGroup } from "@/hooks/useStories";
@@ -79,7 +79,7 @@ export function StoryBar() {
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10 mix-blend-multiply drop-shadow-[0_2px_6px_hsl(var(--primary)/0.4)]"
               />
               <div className="absolute bottom-2 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background z-20">
-                <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+                <AuraLogo className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
             <span className="text-[8px] text-muted-foreground font-medium w-20 text-center truncate">
@@ -135,7 +135,7 @@ export function StoryBar() {
                     className="absolute bottom-2 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background cursor-pointer z-20"
                     onClick={(e) => { e.stopPropagation(); setCreateOpen(true); }}
                   >
-                    <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+                    <AuraLogo className="w-3.5 h-3.5 text-primary-foreground" />
                   </div>
                 )}
               </div>
