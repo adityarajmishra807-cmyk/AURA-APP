@@ -326,7 +326,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
 
         {/* AURIX Rating bar (only for other people's stories) */}
         {!isOwnStory && (
-          <div className="absolute bottom-[72px] left-0 right-0 z-20 flex justify-center px-4">
+          <div className="absolute bottom-24 left-0 right-0 z-20 flex justify-center px-4">
             {hasRated ? (
               <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
                 <span className="text-[10px] text-white/50">Rated</span>
@@ -362,7 +362,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
         )}
 
         {/* Reactions */}
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-4 px-6 safe-bottom">
+        <div className="absolute bottom-14 left-0 right-0 z-20 flex justify-center gap-4 px-6 safe-bottom">
           {REACTIONS.map((r) => (
             <motion.button
               key={r.type}
