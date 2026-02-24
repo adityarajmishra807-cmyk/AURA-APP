@@ -41,8 +41,8 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) {
-      toast.error("Write something first!");
+    if (!content.trim() && !mediaFile) {
+      toast.error("Add some text or media first!");
       return;
     }
     if (!user) return;
@@ -71,7 +71,7 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     // Create post
     const { data: post, error } = await supabase
       .from("posts")
-      .insert({ user_id: user.id, content: content.trim(), image_url: imageUrl })
+      .insert({ user_id: user.id, content: content.trim() || "📸", image_url: imageUrl })
       .select("id")
       .single();
 
@@ -190,7 +190,7 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               </div>
               <Button
                 onClick={handleSubmit}
-                disabled={submitting || !content.trim()}
+                disabled={submitting || (!content.trim() && !mediaFile)}
                 className="gradient-primary text-primary-foreground glow-sm tap-scale"
                 size="sm"
               >
