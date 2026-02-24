@@ -21,6 +21,12 @@ interface LeaderboardEntry {
   streak_count: number;
 }
 
+interface CosmeticInfo {
+  frame?: string | null;
+  nameColor?: string | null;
+  badge?: string | null;
+}
+
 interface College {
   id: string;
   name: string;
@@ -36,6 +42,7 @@ export default function Leaderboard() {
   const [selectedCollege, setSelectedCollege] = useState(profile?.college_id || "");
   const [collegeOpen, setCollegeOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [cosmetics, setCosmetics] = useState<Record<string, CosmeticInfo>>({});
 
   useEffect(() => {
     supabase.from("colleges").select("id, name").order("name").then(({ data }) => {
@@ -56,22 +63,57 @@ export default function Leaderboard() {
 
   useEffect(() => {
     setLoading(true);
-    if (tab === "global") {
-      supabase.rpc("get_leaderboard", { p_limit: 100 }).then(({ data }) => {
-        setEntries((data as any[]) || []);
-        setLoading(false);
-      });
-    } else if (selectedCollege) {
-      supabase.rpc("get_college_leaderboard", {
-        p_college_id: selectedCollege,
-        p_limit: 100,
-      }).then(({ data }) => {
-        setEntries((data as any[]) || []);
-        setLoading(false);
-      });
-    } else {
+    const loadEntries = async () => {
+      let data: any[] = [];
+      if (tab === "global") {
+        const res = await supabase.rpc("get_leaderboard", { p_limit: 100 });
+        data = (res.data as any[]) || [];
+      } else if (selectedCollege) {
+        const res = await supabase.rpc("get_college_leaderboard", {
+          p_college_id: selectedCollege,
+          p_limit: 100,
+        });
+        data = (res.data as any[]) || [];
+      }
+      setEntries(data);
+
+      // Bulk fetch cosmetics for all leaderboard users
+      if (data.length > 0) {
+        const usernames = data.map((e: any) => e.username);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("username, equipped_frame, equipped_name_color, equipped_badge")
+          .in("username", usernames);
+
+        if (profiles) {
+          const itemIds = profiles
+            .flatMap((p: any) => [p.equipped_frame, p.equipped_name_color, p.equipped_badge])
+            .filter(Boolean);
+
+          let itemMap: Record<string, { category: string; preview_value: string }> = {};
+          if (itemIds.length > 0) {
+            const { data: items } = await supabase
+              .from("shop_items")
+              .select("id, category, preview_value")
+              .in("id", itemIds);
+            items?.forEach((item: any) => { itemMap[item.id] = item; });
+          }
+
+          const cosmeticsMap: Record<string, CosmeticInfo> = {};
+          profiles.forEach((p: any) => {
+            cosmeticsMap[p.username] = {
+              frame: p.equipped_frame ? itemMap[p.equipped_frame]?.preview_value : null,
+              nameColor: p.equipped_name_color ? itemMap[p.equipped_name_color]?.preview_value : null,
+              badge: p.equipped_badge ? itemMap[p.equipped_badge]?.preview_value : null,
+            };
+          });
+          setCosmetics(cosmeticsMap);
+        }
+      }
+
       setLoading(false);
-    }
+    };
+    loadEntries();
   }, [tab, selectedCollege]);
 
   const getRankIcon = (rank: number) => {
@@ -187,16 +229,21 @@ export default function Leaderboard() {
               >
                 <div className="w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
                 <Link to={`/profile/${entry.username}`}>
-                  <Avatar className="w-10 h-10 border border-border">
-                    <AvatarImage src={entry.avatar_url || ""} />
-                    <AvatarFallback className="bg-muted text-xs font-bold">
-                      {entry.username?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="w-10 h-10 border border-border" style={cosmetics[entry.username]?.frame ? { boxShadow: `0 0 8px ${cosmetics[entry.username].frame}`, borderColor: cosmetics[entry.username].frame! } : {}}>
+                      <AvatarImage src={entry.avatar_url || ""} />
+                      <AvatarFallback className="bg-muted text-xs font-bold">
+                        {entry.username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
                 </Link>
                 <div className="flex-1 min-w-0">
-                  <Link to={`/profile/${entry.username}`} className="text-sm font-semibold text-foreground truncate block">
-                    @{entry.username}
+                  <Link to={`/profile/${entry.username}`} className="text-sm font-semibold truncate flex items-center gap-1">
+                    <span style={cosmetics[entry.username]?.nameColor ? { background: cosmetics[entry.username].nameColor!, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}} className="text-foreground">
+                      @{entry.username}
+                    </span>
+                    {cosmetics[entry.username]?.badge && <span className="text-sm">{cosmetics[entry.username].badge}</span>}
                     {entry.username === profile?.username && (
                       <span className="text-xs text-primary ml-1">(you)</span>
                     )}
@@ -241,7 +288,7 @@ export default function Leaderboard() {
                     {getRankIcon(entry.rank)}
                   </div>
                   <Link to={`/profile/${entry.username}`}>
-                    <Avatar className="w-8 h-8 md:w-9 md:h-9 border border-border">
+                    <Avatar className="w-8 h-8 md:w-9 md:h-9 border border-border" style={cosmetics[entry.username]?.frame ? { boxShadow: `0 0 6px ${cosmetics[entry.username].frame}`, borderColor: cosmetics[entry.username].frame! } : {}}>
                       <AvatarImage src={entry.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-[10px] md:text-xs font-bold">
                         {entry.username?.[0]?.toUpperCase()}
@@ -249,8 +296,11 @@ export default function Leaderboard() {
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold text-foreground truncate block">
-                      @{entry.username}
+                    <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold truncate flex items-center gap-1">
+                      <span style={cosmetics[entry.username]?.nameColor ? { background: cosmetics[entry.username].nameColor!, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}} className="text-foreground truncate">
+                        @{entry.username}
+                      </span>
+                      {cosmetics[entry.username]?.badge && <span className="text-xs md:text-sm">{cosmetics[entry.username].badge}</span>}
                       {entry.username === profile?.username && (
                         <span className="text-[10px] md:text-xs text-primary ml-1">(you)</span>
                       )}
