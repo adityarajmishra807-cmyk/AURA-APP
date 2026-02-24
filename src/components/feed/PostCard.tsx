@@ -83,6 +83,10 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
 
   const lagY = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -6]);
 
+  // Parallax depth for post images — image shifts opposite to scroll
+  const imageParallaxY = useTransform(scrollYProgress, [0, 1], [isMobile ? 15 : 30, isMobile ? -15 : -30]);
+  const imageScale = useTransform(scrollYProgress, [0, 0.5, 1], [1.08, 1.12, 1.08]);
+
   const handleDelete = async () => {
     setDeleting(true);
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
@@ -224,17 +228,16 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               src={post.image_url}
               alt="Post"
               className={cn(
-                "w-full max-h-72 md:max-h-96 object-cover transition-transform duration-700",
+                "w-full max-h-72 md:max-h-96 object-cover will-change-transform",
                 !imageLoaded && "opacity-0 absolute inset-0"
               )}
+              style={{ y: imageParallaxY, scale: imageScale }}
               loading="lazy"
               onLoad={() => setImageLoaded(true)}
-              whileHover={{ scale: 1.03 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             />
             {/* Image glow reflection */}
             <div
-              className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+              className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none z-[1]"
               style={{
                 background: "linear-gradient(to top, hsl(var(--card) / 0.6), transparent)",
               }}
