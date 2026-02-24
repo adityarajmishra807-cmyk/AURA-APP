@@ -82,7 +82,7 @@ export function StoryBar() {
                 <Plus className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
             </div>
-            <span className="text-[8px] text-muted-foreground font-medium w-16 text-center truncate">
+            <span className="text-[8px] text-muted-foreground font-medium w-20 text-center truncate">
               Aura Moment
             </span>
           </motion.button>
@@ -140,7 +140,7 @@ export function StoryBar() {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium w-16 text-center truncate",
+                "text-[10px] font-medium w-20 text-center truncate",
                 group.hasUnviewed ? "text-foreground" : "text-muted-foreground"
               )}>
                 {isOwn ? "Aura Moment" : group.username}
