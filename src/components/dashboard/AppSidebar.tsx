@@ -17,12 +17,14 @@ import {
   Gift,
   MessageCircle,
   Download,
+  Award,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
   { label: "Chat", icon: MessageCircle, href: "/chat" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
+  { label: "Achievements", icon: Award, href: "/achievements" },
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Referrals", icon: Gift, href: "/referrals" },
   { label: "Settings", icon: Settings, href: "/settings" },
