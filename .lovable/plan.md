@@ -1,55 +1,22 @@
 
 
-## Plan: Add Post Likes
+## Plan: Rename "Like" to "Spark" with Yellow Heart + Sparkle
 
 ### Overview
-Add a simple like (heart) button to each post. Users can toggle like on/off. Each post shows its like count.
+Rebrand the like button from a red heart to a yellow "Spark" — a yellow heart icon with a sparkle particle effect when activated.
 
-### 1. Database Migration
+### Changes to `src/components/feed/PostLikeButton.tsx`
 
-Create `post_likes` table:
+1. **Icon**: Replace the `Heart` icon from lucide-react with a custom yellow heart. Use lucide's `Sparkles` icon layered on top for the sparkle effect when sparked.
 
-```sql
-CREATE TABLE public.post_likes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_id UUID NOT NULL,
-  user_id UUID NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(post_id, user_id)
-);
+2. **Color scheme**: Change from red (`fill-red-500 / text-red-500`) to yellow/gold (`fill-yellow-400 / text-yellow-400`), using the existing `aura-gold` color token for hover states.
 
-ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+3. **Aria labels**: Update from "Like"/"Unlike" to "Spark"/"Unspark".
 
-CREATE POLICY "Anyone can view likes" ON public.post_likes FOR SELECT USING (true);
-CREATE POLICY "Users can add likes" ON public.post_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can remove likes" ON public.post_likes FOR DELETE USING (auth.uid() = user_id);
+4. **Error toasts**: Update messages from "Failed to like" / "Failed to unlike" to "Failed to spark" / "Failed to unspark".
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.post_likes;
-```
-
-### 2. New Component: `src/components/feed/PostLikeButton.tsx`
-
-- Heart icon button with like count
-- Tapping toggles: INSERT if not liked, DELETE if already liked
-- Optimistic UI: immediately toggle state, revert on error
-- Animated heart scale + fill on like (Framer Motion spring)
-- Props: `postId`, `initialLiked`, `initialCount`, `onToggle`
-
-### 3. Modify `PostFeed.tsx`
-
-- After fetching posts, batch-fetch like counts and user's likes for current post IDs:
-  - `SELECT post_id, count(*) FROM post_likes WHERE post_id IN (...) GROUP BY post_id`
-  - `SELECT post_id FROM post_likes WHERE user_id = current_user AND post_id IN (...)`
-- Pass `likeCount` and `userLiked` as props to each `PostCard`
-
-### 4. Modify `PostCard.tsx`
-
-- Add `likeCount` and `userLiked` props to `PostCardProps`
-- Render `<PostLikeButton>` between the content and the rating section
+5. **Sparkle animation**: When sparked, show a brief sparkle burst using a small `Sparkles` icon that fades in/scales up alongside the heart, then fades out — achieved with Framer Motion `AnimatePresence`.
 
 ### Files
-- **New migration** — `post_likes` table + RLS + realtime
-- **New**: `src/components/feed/PostLikeButton.tsx`
-- **Modified**: `src/components/feed/PostFeed.tsx` — fetch likes data, pass as props
-- **Modified**: `src/components/feed/PostCard.tsx` — add like button, accept new props
+- **Modified**: `src/components/feed/PostLikeButton.tsx` — icon, colors, labels, sparkle effect
 
