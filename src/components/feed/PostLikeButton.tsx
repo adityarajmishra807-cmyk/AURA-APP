@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { RatingParticles } from "./RatingParticles";
 
 interface PostLikeButtonProps {
   postId: string;
@@ -16,7 +17,10 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
   const [showSparkle, setShowSparkle] = useState(false);
+  const [showParticles, setShowParticles] = useState(false);
   const sparkleKey = useRef(0);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const handleParticlesDone = useCallback(() => setShowParticles(false), []);
 
   const toggle = async () => {
     if (!user) return;
@@ -29,6 +33,7 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
     if (!wasLiked) {
       sparkleKey.current += 1;
       setShowSparkle(true);
+      setShowParticles(true);
       setTimeout(() => setShowSparkle(false), 600);
     }
 
@@ -57,6 +62,7 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
 
   return (
     <button
+      ref={buttonRef}
       onClick={toggle}
       className="flex items-center gap-1.5 group/like tap-scale relative"
       aria-label={liked ? "Unspark" : "Spark"}
@@ -70,7 +76,7 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
         <Heart
           className={`w-5 h-5 transition-colors ${
             liked
-              ? "fill-yellow-400 text-yellow-400"
+              ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
               : "text-muted-foreground group-hover/like:text-yellow-400"
           }`}
         />
@@ -88,6 +94,14 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
             </motion.div>
           )}
         </AnimatePresence>
+        <RatingParticles
+          active={showParticles}
+          color="#facc15"
+          x={10}
+          y={10}
+          count={8}
+          onComplete={handleParticlesDone}
+        />
       </motion.div>
       <AnimatePresence mode="popLayout">
         <motion.span
