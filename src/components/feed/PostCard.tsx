@@ -11,6 +11,7 @@ import { Coins, Clock, Check, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CommentSection } from "./CommentSection";
+import { PostLikeButton } from "./PostLikeButton";
 import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
@@ -53,9 +54,11 @@ interface PostCardProps {
   onFriendChange?: () => void;
   onRated: () => void;
   index?: number;
+  likeCount?: number;
+  userLiked?: boolean;
 }
 
-export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, index = 0 }: PostCardProps) {
+export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, index = 0, likeCount = 0, userLiked = false }: PostCardProps) {
   const { user, refreshProfile } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -247,6 +250,11 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             />
           </motion.div>
         )}
+
+        {/* Like button */}
+        <div className="flex items-center mt-1 mb-1">
+          <PostLikeButton postId={post.id} initialLiked={userLiked} initialCount={likeCount} />
+        </div>
 
         {/* Rating section */}
         {!isOwnPost && !hasRated && (

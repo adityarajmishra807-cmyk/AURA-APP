@@ -32,6 +32,8 @@ export function PostFeed() {
   const { checkAchievements } = useAchievements();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
   const [colleges, setColleges] = useState<Record<string, string>>({});
   const [friendIds, setFriendIds] = useState<string[]>([]);
   const [friendships, setFriendships] = useState<Record<string, { status: string; id: string; direction: "sent" | "received" }>>({});
@@ -64,6 +66,39 @@ export function PostFeed() {
     }
   }, [user]);
 
+  const fetchLikes = useCallback(async (postIds: string[]) => {
+    if (!postIds.length) return;
+
+    const { data: countData } = await supabase
+      .from("post_likes")
+      .select("post_id")
+      .in("post_id", postIds);
+
+    if (countData) {
+      const counts: Record<string, number> = {};
+      countData.forEach((r: any) => {
+        counts[r.post_id] = (counts[r.post_id] || 0) + 1;
+      });
+      setLikeCounts((prev) => ({ ...prev, ...counts }));
+    }
+
+    if (user) {
+      const { data: userLikeData } = await supabase
+        .from("post_likes")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .in("post_id", postIds);
+
+      if (userLikeData) {
+        setUserLikes((prev) => {
+          const next = new Set(prev);
+          userLikeData.forEach((r: any) => next.add(r.post_id));
+          return next;
+        });
+      }
+    }
+  }, [user]);
+
   const fetchPosts = useCallback(async (cursor?: string) => {
     let query = supabase
       .from("posts")
@@ -89,10 +124,11 @@ export function PostFeed() {
         setNewPostCount(0);
       }
       setHasMore(data.length === PAGE_SIZE);
+      fetchLikes(mapped.map((p: any) => p.id));
     }
     setLoading(false);
     setLoadingMore(false);
-  }, []);
+  }, [fetchLikes]);
 
   const fetchUserRatings = useCallback(async () => {
     if (!user) return;
@@ -301,6 +337,8 @@ export function PostFeed() {
                 onFriendChange={fetchFriends}
                 onRated={handleRefresh}
                 index={i}
+                likeCount={likeCounts[post.id] || 0}
+                userLiked={userLikes.has(post.id)}
               />
             </motion.div>
           ))}
