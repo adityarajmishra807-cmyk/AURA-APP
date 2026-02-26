@@ -7,9 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FriendButton } from "./FriendButton";
 import { AnimatedRatingBar } from "./AnimatedRatingBar";
-import { Coins, Clock, Check, Trash2, MoreVertical } from "lucide-react";
+import { Coins, Clock, Check, Trash2, MoreVertical, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { HashtagRenderer } from "./HashtagRenderer";
+import { MediaCarousel } from "./MediaCarousel";
+import { SharePostDialog } from "./SharePostDialog";
 import { CommentSection } from "./CommentSection";
 import { PostLikeButton } from "./PostLikeButton";
 import { useCosmetics } from "@/hooks/useCosmetics";
@@ -46,6 +49,7 @@ interface PostCardProps {
       aurix_balance: number;
       college_id: string | null;
     };
+    media?: { media_url: string; media_type: string; position: number }[];
   };
   userRating?: number | null;
   collegeName?: string;
@@ -53,12 +57,14 @@ interface PostCardProps {
   friendshipId?: string;
   onFriendChange?: () => void;
   onRated: () => void;
+  onHashtagClick?: (hashtag: string) => void;
   index?: number;
   likeCount?: number;
   userLiked?: boolean;
+  trendingRank?: number;
 }
 
-export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, index = 0, likeCount = 0, userLiked = false }: PostCardProps) {
+export function PostCard({ post, userRating, collegeName, friendStatus, friendshipId, onFriendChange, onRated, onHashtagClick, index = 0, likeCount = 0, userLiked = false, trendingRank }: PostCardProps) {
   const { user, refreshProfile } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -70,6 +76,8 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const isOwnPost = user?.id === post.user_id;
   const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance

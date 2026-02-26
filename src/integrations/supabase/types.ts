@@ -375,6 +375,35 @@ export type Database = {
         }
         Relationships: []
       }
+      post_hashtags: {
+        Row: {
+          created_at: string
+          hashtag: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          hashtag: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          hashtag?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_hashtags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_likes: {
         Row: {
           created_at: string
@@ -395,6 +424,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_media: {
+        Row: {
+          created_at: string
+          id: string
+          media_type: string
+          media_url: string
+          position: number
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          position?: number
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          position?: number
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_media_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
@@ -921,6 +985,13 @@ export type Database = {
       get_or_create_conversation: {
         Args: { p_other_user_id: string }
         Returns: string
+      }
+      get_trending_posts: {
+        Args: { p_limit?: number }
+        Returns: {
+          engagement_score: number
+          post_id: string
+        }[]
       }
       is_conversation_member: {
         Args: { p_conversation_id: string }
