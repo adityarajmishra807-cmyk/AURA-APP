@@ -222,11 +222,27 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           )}
         </div>
 
-        {/* Content */}
-        <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">{post.content}</p>
+        {/* Trending rank badge */}
+        {trendingRank && trendingRank <= 3 && (
+          <div className={cn(
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold mb-2",
+            trendingRank === 1 && "bg-yellow-500/20 text-yellow-400",
+            trendingRank === 2 && "bg-gray-400/20 text-gray-300",
+            trendingRank === 3 && "bg-orange-500/20 text-orange-400"
+          )}>
+            🔥 #{trendingRank} Trending
+          </div>
+        )}
 
-        {/* Image with cinematic reveal */}
-        {post.image_url && (
+        {/* Content with hashtag support */}
+        <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">
+          <HashtagRenderer content={post.content} onHashtagClick={onHashtagClick} />
+        </p>
+
+        {/* Media Carousel for multi-media posts */}
+        {post.media && post.media.length > 1 ? (
+          <MediaCarousel items={post.media} />
+        ) : post.image_url && (
           <motion.div
             className="mb-3 md:mb-4 rounded-xl overflow-hidden border border-border/30 relative"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -234,7 +250,6 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Image shimmer placeholder */}
             {!imageLoaded && (
               <div className="w-full h-48 md:h-64 shimmer rounded-xl" />
             )}
@@ -249,7 +264,6 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               loading="lazy"
               onLoad={() => setImageLoaded(true)}
             />
-            {/* Image glow reflection */}
             <div
               className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none z-[1]"
               style={{
@@ -259,9 +273,16 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           </motion.div>
         )}
 
-        {/* Like button */}
-        <div className="flex items-center mt-1 mb-1">
+        {/* Like + Share buttons */}
+        <div className="flex items-center gap-3 mt-1 mb-1">
           <PostLikeButton postId={post.id} initialLiked={userLiked} initialCount={likeCount} />
+          <button
+            onClick={() => setShowShareDialog(true)}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors tap-scale"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="text-xs">Share</span>
+          </button>
         </div>
 
         {/* Rating section */}
@@ -373,6 +394,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share dialog */}
+      <SharePostDialog postId={post.id} open={showShareDialog} onOpenChange={setShowShareDialog} />
     </motion.div>
   );
 }
