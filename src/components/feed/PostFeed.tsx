@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
 import { PullToRefresh } from "./PullToRefresh";
-import { Sparkles, RefreshCw, Users, Globe, Loader2 } from "lucide-react";
+import { Sparkles, RefreshCw, Users, Globe, Loader2, TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAchievements } from "@/hooks/useAchievements";
 
@@ -21,9 +21,10 @@ interface PostWithProfile {
     aurix_balance: number;
     college_id: string | null;
   };
+  media?: { media_url: string; media_type: string; position: number }[];
 }
 
-type FeedFilter = "all" | "friends" | "mine";
+type FeedFilter = "all" | "friends" | "mine" | "trending";
 
 const PAGE_SIZE = 20;
 
@@ -42,6 +43,8 @@ export function PostFeed() {
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<FeedFilter>("all");
   const [newPostCount, setNewPostCount] = useState(0);
+  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+  const [trendingRanks, setTrendingRanks] = useState<Record<string, number>>({});
   const channelRef = useRef<any>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -99,6 +102,24 @@ export function PostFeed() {
     }
   }, [user]);
 
+  const fetchPostMedia = useCallback(async (postIds: string[]) => {
+    if (!postIds.length) return {};
+    const { data } = await supabase
+      .from("post_media")
+      .select("post_id, media_url, media_type, position")
+      .in("post_id", postIds)
+      .order("position", { ascending: true });
+
+    const mediaMap: Record<string, { media_url: string; media_type: string; position: number }[]> = {};
+    if (data) {
+      data.forEach((m: any) => {
+        if (!mediaMap[m.post_id]) mediaMap[m.post_id] = [];
+        mediaMap[m.post_id].push(m);
+      });
+    }
+    return mediaMap;
+  }, []);
+
   const fetchPosts = useCallback(async (cursor?: string) => {
     let query = supabase
       .from("posts")
@@ -117,10 +138,18 @@ export function PostFeed() {
         ...p,
         profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
       }));
+
+      // Fetch media for these posts
+      const mediaMap = await fetchPostMedia(mapped.map((p: any) => p.id));
+      const withMedia = mapped.map((p: any) => ({
+        ...p,
+        media: mediaMap[p.id] || [],
+      }));
+
       if (cursor) {
-        setPosts((prev) => [...prev, ...mapped]);
+        setPosts((prev) => [...prev, ...withMedia]);
       } else {
-        setPosts(mapped);
+        setPosts(withMedia);
         setNewPostCount(0);
       }
       setHasMore(data.length === PAGE_SIZE);
@@ -128,7 +157,45 @@ export function PostFeed() {
     }
     setLoading(false);
     setLoadingMore(false);
-  }, [fetchLikes]);
+  }, [fetchLikes, fetchPostMedia]);
+
+  const fetchTrendingPosts = useCallback(async () => {
+    const { data: trendingData } = await supabase.rpc("get_trending_posts", { p_limit: 20 });
+    if (!trendingData || !trendingData.length) {
+      setTrendingRanks({});
+      return;
+    }
+
+    const ranks: Record<string, number> = {};
+    (trendingData as any[]).forEach((t, i) => {
+      ranks[t.post_id] = i + 1;
+    });
+    setTrendingRanks(ranks);
+
+    // Fetch full post data for trending
+    const trendingIds = (trendingData as any[]).map((t) => t.post_id);
+    const { data: postData } = await supabase
+      .from("posts")
+      .select("id, content, image_url, created_at, user_id, profiles!posts_user_id_fkey(username, avatar_url, aurix_balance, college_id)")
+      .in("id", trendingIds);
+
+    if (postData) {
+      const mapped = postData.map((p: any) => ({
+        ...p,
+        profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
+      }));
+      const mediaMap = await fetchPostMedia(trendingIds);
+      const withMedia = mapped.map((p: any) => ({
+        ...p,
+        media: mediaMap[p.id] || [],
+      }));
+      // Sort by trending rank
+      withMedia.sort((a, b) => (ranks[a.id] || 999) - (ranks[b.id] || 999));
+      setPosts(withMedia);
+      fetchLikes(trendingIds);
+    }
+    setLoading(false);
+  }, [fetchLikes, fetchPostMedia]);
 
   const fetchUserRatings = useCallback(async () => {
     if (!user) return;
@@ -154,7 +221,12 @@ export function PostFeed() {
   }, []);
 
   useEffect(() => {
-    fetchPosts();
+    if (filter === "trending") {
+      setLoading(true);
+      fetchTrendingPosts();
+    } else {
+      fetchPosts();
+    }
     fetchUserRatings();
     fetchColleges();
     fetchFriends();
@@ -166,7 +238,7 @@ export function PostFeed() {
         { event: "INSERT", schema: "public", table: "posts" },
         (payload) => {
           if (payload.new.user_id === user?.id) {
-            fetchPosts();
+            if (filter !== "trending") fetchPosts();
           } else {
             setNewPostCount((c) => c + 1);
           }
@@ -179,11 +251,11 @@ export function PostFeed() {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [fetchPosts, fetchUserRatings, fetchColleges, fetchFriends, user]);
+  }, [filter, fetchPosts, fetchTrendingPosts, fetchUserRatings, fetchColleges, fetchFriends, user]);
 
-  // Infinite scroll observer
+  // Infinite scroll observer (disabled for trending)
   useEffect(() => {
-    if (!sentinelRef.current) return;
+    if (!sentinelRef.current || filter === "trending") return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
@@ -198,19 +270,29 @@ export function PostFeed() {
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, loading, posts, fetchPosts]);
+  }, [hasMore, loadingMore, loading, posts, fetchPosts, filter]);
 
   const handleRefresh = useCallback(async () => {
     setHasMore(true);
-    await Promise.all([fetchPosts(), fetchUserRatings(), fetchFriends()]);
+    if (filter === "trending") {
+      await Promise.all([fetchTrendingPosts(), fetchUserRatings(), fetchFriends()]);
+    } else {
+      await Promise.all([fetchPosts(), fetchUserRatings(), fetchFriends()]);
+    }
     checkAchievements();
-  }, [fetchPosts, fetchUserRatings, fetchFriends, checkAchievements]);
+  }, [filter, fetchPosts, fetchTrendingPosts, fetchUserRatings, fetchFriends, checkAchievements]);
 
   const handleLoadNew = () => {
     setHasMore(true);
-    fetchPosts();
+    if (filter === "trending") fetchTrendingPosts();
+    else fetchPosts();
     fetchUserRatings();
     toast.success("Feed updated!");
+  };
+
+  const handleHashtagClick = (hashtag: string) => {
+    setActiveHashtag(hashtag);
+    setFilter("all");
   };
 
   const getFriendStatus = (userId: string): "none" | "pending_sent" | "pending_received" | "accepted" => {
@@ -222,11 +304,18 @@ export function PostFeed() {
     return "none";
   };
 
-  const displayedPosts = filter === "friends"
+  let displayedPosts = filter === "friends"
     ? posts.filter((p) => friendIds.includes(p.user_id) || p.user_id === user?.id)
     : filter === "mine"
     ? posts.filter((p) => p.user_id === user?.id)
     : posts;
+
+  // Hashtag filter
+  if (activeHashtag) {
+    displayedPosts = displayedPosts.filter((p) =>
+      p.content.toLowerCase().includes(`#${activeHashtag.toLowerCase()}`)
+    );
+  }
 
   if (loading) {
     return (
@@ -263,12 +352,13 @@ export function PostFeed() {
       <div className="flex gap-1.5 md:gap-2 overflow-x-auto no-scrollbar">
         {([
           { key: "all" as FeedFilter, label: "All", Icon: Globe },
+          { key: "trending" as FeedFilter, label: "Trending", Icon: TrendingUp },
           { key: "friends" as FeedFilter, label: "Friends", Icon: Users },
           { key: "mine" as FeedFilter, label: "My Posts", Icon: Sparkles },
         ]).map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setFilter(tab.key)}
+            onClick={() => { setFilter(tab.key); setActiveHashtag(null); }}
             className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors tap-scale"
           >
             {filter === tab.key && (
@@ -285,6 +375,25 @@ export function PostFeed() {
           </button>
         ))}
       </div>
+
+      {/* Active hashtag chip */}
+      <AnimatePresence>
+        {activeHashtag && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex items-center gap-2"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary text-sm font-medium border border-primary/30">
+              #{activeHashtag}
+              <button onClick={() => setActiveHashtag(null)} className="hover:bg-primary/20 rounded-full p-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* New posts indicator */}
       <AnimatePresence>
@@ -311,10 +420,10 @@ export function PostFeed() {
         >
           <Sparkles className="w-10 h-10 text-primary mx-auto mb-3" />
           <h3 className="font-display text-lg font-bold text-foreground mb-1">
-            {filter === "friends" ? "No friends' posts yet" : filter === "mine" ? "You haven't posted yet" : "No posts yet"}
+            {filter === "friends" ? "No friends' posts yet" : filter === "mine" ? "You haven't posted yet" : filter === "trending" ? "No trending posts yet" : activeHashtag ? `No posts with #${activeHashtag}` : "No posts yet"}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {filter === "friends" ? "Add friends to see their posts here!" : filter === "mine" ? "Create your first post above!" : "Be the first to post and earn +10 AURIX!"}
+            {filter === "friends" ? "Add friends to see their posts here!" : filter === "mine" ? "Create your first post above!" : filter === "trending" ? "Posts will trend based on engagement!" : "Be the first to post and earn +10 AURIX!"}
           </p>
         </motion.div>
       ) : (
@@ -336,9 +445,11 @@ export function PostFeed() {
                 friendshipId={friendships[post.user_id]?.id}
                 onFriendChange={fetchFriends}
                 onRated={handleRefresh}
+                onHashtagClick={handleHashtagClick}
                 index={i}
                 likeCount={likeCounts[post.id] || 0}
                 userLiked={userLikes.has(post.id)}
+                trendingRank={filter === "trending" ? trendingRanks[post.id] : undefined}
               />
             </motion.div>
           ))}
