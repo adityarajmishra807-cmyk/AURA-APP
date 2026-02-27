@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,14 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
   const sparkleKey = useRef(0);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const handleParticlesDone = useCallback(() => setShowParticles(false), []);
+
+  useEffect(() => {
+    setLiked(initialLiked);
+  }, [initialLiked]);
+
+  useEffect(() => {
+    setCount(initialCount);
+  }, [initialCount]);
 
   const toggle = async () => {
     if (!user) return;
@@ -51,7 +59,10 @@ export function PostLikeButton({ postId, initialLiked, initialCount }: PostLikeB
     } else {
       const { error } = await supabase
         .from("post_likes")
-        .insert({ post_id: postId, user_id: user.id });
+        .upsert(
+          { post_id: postId, user_id: user.id },
+          { onConflict: "post_id,user_id", ignoreDuplicates: true }
+        );
       if (error) {
         setLiked(wasLiked);
         setCount(prevCount);
