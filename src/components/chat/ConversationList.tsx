@@ -17,6 +17,19 @@ function getAuraTier(balance: number) {
   return { label: "", glow: "" };
 }
 
+function formatPreview(content: string): string {
+  if (content.startsWith("__shared_post:")) return "📎 Shared a post";
+  if (content.startsWith("__call:ended:video:")) return `📹 Video call · ${content.split(":")[3]}`;
+  if (content.startsWith("__call:ended:audio:")) return `📞 Voice call · ${content.split(":")[3]}`;
+  if (content.startsWith("__call:missed:video:")) return "📹 Missed video call";
+  if (content.startsWith("__call:missed:audio:")) return "📞 Missed voice call";
+  if (content.startsWith("__call:rejected:video:")) return "📹 Declined video call";
+  if (content.startsWith("__call:rejected:audio:")) return "📞 Declined voice call";
+  if (content.startsWith("__call:")) return "📞 Call";
+  if (content.startsWith("__voice:")) return "🎙️ Voice message";
+  return content;
+}
+
 export function ConversationList() {
   const { conversations, loading } = useConversations();
   const { user } = useAuth();
@@ -199,7 +212,7 @@ export function ConversationList() {
                         <div className="flex items-center justify-between mt-0.5">
                           <p className="text-xs text-muted-foreground truncate pr-2">
                             {c.last_message
-                              ? (c.last_message.sender_id === user?.id ? "You: " : "") + c.last_message.content
+                              ? (c.last_message.sender_id === user?.id ? "You: " : "") + formatPreview(c.last_message.content)
                               : "Start the conversation."}
                           </p>
                           {(c.unread_count || 0) > 0 && (
