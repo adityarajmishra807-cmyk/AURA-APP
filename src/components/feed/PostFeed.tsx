@@ -244,6 +244,32 @@ export function PostFeed() {
           }
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "post_likes" },
+        (payload: any) => {
+          const postId = payload.new.post_id;
+          setLikeCounts((prev) => ({ ...prev, [postId]: (prev[postId] || 0) + 1 }));
+          if (payload.new.user_id === user?.id) {
+            setUserLikes((prev) => new Set(prev).add(postId));
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "post_likes" },
+        (payload: any) => {
+          const postId = payload.old.post_id;
+          setLikeCounts((prev) => ({ ...prev, [postId]: Math.max((prev[postId] || 1) - 1, 0) }));
+          if (payload.old.user_id === user?.id) {
+            setUserLikes((prev) => {
+              const next = new Set(prev);
+              next.delete(postId);
+              return next;
+            });
+          }
+        }
+      )
       .subscribe();
 
     return () => {
