@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessage } from "@/hooks/useChat";
 
 const reactionTypes = [
@@ -16,6 +17,48 @@ function getRepIcon(balance: number) {
   if (balance >= 2000) return "🔥";
   if (balance >= 500) return "⚡";
   return null;
+}
+
+interface SharedPostData {
+  id: string;
+  content: string;
+  image_url: string | null;
+  username: string;
+}
+
+function SharedPostEmbed({ postId }: { postId: string }) {
+  const [post, setPost] = useState<SharedPostData | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("posts")
+      .select("id, content, image_url, profiles!posts_user_id_fkey(username)")
+      .eq("id", postId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          const profile = Array.isArray((data as any).profiles) ? (data as any).profiles[0] : (data as any).profiles;
+          setPost({
+            id: data.id,
+            content: data.content,
+            image_url: data.image_url,
+            username: profile?.username || "unknown",
+          });
+        }
+      });
+  }, [postId]);
+
+  if (!post) return <span className="text-xs text-muted-foreground italic">Loading shared post...</span>;
+
+  return (
+    <div className="mt-1 p-2.5 rounded-lg bg-secondary/40 border border-border/30 max-w-[240px]">
+      <p className="text-[10px] text-muted-foreground mb-1">📎 Shared post by @{post.username}</p>
+      <p className="text-xs line-clamp-3">{post.content}</p>
+      {post.image_url && (
+        <img src={post.image_url} alt="" className="mt-1.5 rounded-md w-full h-20 object-cover" />
+      )}
+    </div>
+  );
 }
 
 interface Props {
@@ -62,6 +105,10 @@ export function ChatBubble({
         return `✔ Seen ${format(new Date(message.read_at), "h:mm a")}`;
       })()
     : null;
+
+  // Check if this is a shared post message
+  const isSharedPost = message.content.startsWith("__shared_post:");
+  const sharedPostId = isSharedPost ? message.content.replace("__shared_post:", "").trim() : null;
 
   return (
     <motion.div
@@ -136,7 +183,9 @@ export function ChatBubble({
               )}
               style={{ borderRadius }}
             >
-              {isVoice && audioUrl ? (
+              {isSharedPost && sharedPostId ? (
+                <SharedPostEmbed postId={sharedPostId} />
+              ) : isVoice && audioUrl ? (
                 <div className="flex items-center gap-2 min-w-[180px]">
                   <span className="text-base">🎤</span>
                   <audio

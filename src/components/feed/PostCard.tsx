@@ -78,7 +78,6 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const isOwnPost = user?.id === post.user_id;
-  const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
   const tilt = use3DTilt({ maxTilt: isMobile ? 0 : 6, scale: isMobile ? 1 : 1.015, speed: 350 });
