@@ -28,11 +28,15 @@ export function useShop() {
   const [loading, setLoading] = useState(true);
 
   const fetchItems = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("shop_items")
       .select("id, name, description, category, price, rarity, preview_value, is_permanent, duration_days")
       .eq("active", true)
       .order("price", { ascending: true });
+    if (error) {
+      console.error("Failed to fetch shop items:", error);
+      return;
+    }
     if (data) setItems(data as ShopItem[]);
   }, []);
 
