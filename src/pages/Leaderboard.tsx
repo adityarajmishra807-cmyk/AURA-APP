@@ -240,7 +240,7 @@ export default function Leaderboard() {
                 </Link>
                 <div className="flex-1 min-w-0">
                   <Link to={`/profile/${entry.username}`} className="text-sm font-semibold truncate flex items-center gap-1">
-                    <span style={cosmetics[entry.username]?.nameColor ? { background: cosmetics[entry.username].nameColor!, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}} className="text-foreground">
+                    <span className={cn("text-foreground", cosmetics[entry.username]?.nameColor)}>
                       @{entry.username}
                     </span>
                     {cosmetics[entry.username]?.badge && <span className="text-sm">{cosmetics[entry.username].badge}</span>}
@@ -297,7 +297,7 @@ export default function Leaderboard() {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold truncate flex items-center gap-1">
-                      <span style={cosmetics[entry.username]?.nameColor ? { background: cosmetics[entry.username].nameColor!, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}} className="text-foreground truncate">
+                      <span className={cn("text-foreground truncate", cosmetics[entry.username]?.nameColor)}>
                         @{entry.username}
                       </span>
                       {cosmetics[entry.username]?.badge && <span className="text-xs md:text-sm">{cosmetics[entry.username].badge}</span>}
