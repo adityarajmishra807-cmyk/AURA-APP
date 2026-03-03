@@ -125,6 +125,11 @@ export default function Leaderboard() {
 
   const isTopThree = (rank: number) => rank <= 3;
 
+  const getNameStyle = (nameColor?: string | null) =>
+    nameColor?.includes("text-transparent")
+      ? ({ WebkitTextFillColor: "transparent" as const } as const)
+      : undefined;
+
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto pb-4 md:pb-0">
@@ -230,7 +235,7 @@ export default function Leaderboard() {
                 <div className="w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
                 <Link to={`/profile/${entry.username}`}>
                   <div className="relative">
-                    <Avatar className="w-10 h-10 border border-border" style={cosmetics[entry.username]?.frame ? { boxShadow: `0 0 8px ${cosmetics[entry.username].frame}`, borderColor: cosmetics[entry.username].frame! } : {}}>
+                    <Avatar className={cn("w-10 h-10 border border-border", cosmetics[entry.username]?.frame)}>
                       <AvatarImage src={entry.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-xs font-bold">
                         {entry.username?.[0]?.toUpperCase()}
@@ -240,7 +245,10 @@ export default function Leaderboard() {
                 </Link>
                 <div className="flex-1 min-w-0">
                   <Link to={`/profile/${entry.username}`} className="text-sm font-semibold truncate flex items-center gap-1">
-                    <span className={cn("text-foreground", cosmetics[entry.username]?.nameColor)}>
+                    <span
+                      className={cn("text-foreground inline-block", cosmetics[entry.username]?.nameColor)}
+                      style={getNameStyle(cosmetics[entry.username]?.nameColor)}
+                    >
                       @{entry.username}
                     </span>
                     {cosmetics[entry.username]?.badge && <span className="text-sm">{cosmetics[entry.username].badge}</span>}
@@ -288,7 +296,7 @@ export default function Leaderboard() {
                     {getRankIcon(entry.rank)}
                   </div>
                   <Link to={`/profile/${entry.username}`}>
-                    <Avatar className="w-8 h-8 md:w-9 md:h-9 border border-border" style={cosmetics[entry.username]?.frame ? { boxShadow: `0 0 6px ${cosmetics[entry.username].frame}`, borderColor: cosmetics[entry.username].frame! } : {}}>
+                    <Avatar className={cn("w-8 h-8 md:w-9 md:h-9 border border-border", cosmetics[entry.username]?.frame)}>
                       <AvatarImage src={entry.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-[10px] md:text-xs font-bold">
                         {entry.username?.[0]?.toUpperCase()}
@@ -297,7 +305,10 @@ export default function Leaderboard() {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold truncate flex items-center gap-1">
-                      <span className={cn("text-foreground truncate", cosmetics[entry.username]?.nameColor)}>
+                      <span
+                        className={cn("text-foreground truncate inline-block max-w-full", cosmetics[entry.username]?.nameColor)}
+                        style={getNameStyle(cosmetics[entry.username]?.nameColor)}
+                      >
                         @{entry.username}
                       </span>
                       {cosmetics[entry.username]?.badge && <span className="text-xs md:text-sm">{cosmetics[entry.username].badge}</span>}

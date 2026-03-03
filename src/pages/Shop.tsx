@@ -48,7 +48,12 @@ function ItemPreview({ item }: { item: ShopItem }) {
   }
   if (item.category === "name_color") {
     return (
-      <span className={cn("font-display font-bold text-base", item.preview_value)}>@user</span>
+      <span
+        className={cn("font-display font-bold text-base inline-block", item.preview_value)}
+        style={item.preview_value.includes("text-transparent") ? { WebkitTextFillColor: "transparent" as const } : undefined}
+      >
+        @user
+      </span>
     );
   }
   if (item.category === "theme") {
