@@ -20,6 +20,7 @@ import {
 import { Coins, ShoppingBag, Check, Sparkles, Clock, Loader2, Crown, Palette, Frame, Award } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { cosmeticProps, nameColorProps, parseCosmeticStyles } from "@/lib/cosmeticStyles";
 
 type Category = "all" | "frame" | "name_color" | "theme" | "badge";
 
