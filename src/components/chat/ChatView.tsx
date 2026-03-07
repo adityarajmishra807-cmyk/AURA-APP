@@ -176,12 +176,6 @@ export function ChatView() {
     <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-4rem)] relative overflow-hidden rounded-2xl">
       <AmbientBackground otherUser={otherUser} energy={energy} />
 
-      {/* Subtle noise texture */}
-      <div
-        className="absolute inset-0 opacity-[0.02] pointer-events-none z-0"
-        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }}
-      />
-
       {/* Header */}
       <ChatHeader
         otherUser={otherUser}
@@ -212,15 +206,24 @@ export function ChatView() {
             </div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3">
+          <div className="flex flex-col items-center justify-center h-full gap-4">
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
               className="text-center"
             >
-              <p className="text-muted-foreground text-sm font-medium">Start the conversation.</p>
-              <div className="h-px w-20 mx-auto mt-2 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-primary/[0.06] flex items-center justify-center">
+                <motion.span
+                  className="text-2xl"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, delay: 1 }}
+                >
+                  👋
+                </motion.span>
+              </div>
+              <p className="text-foreground font-medium text-sm">Say hello</p>
+              <p className="text-muted-foreground/60 text-xs mt-1">Start a conversation with @{otherUser?.username || "..."}</p>
             </motion.div>
           </div>
         ) : (

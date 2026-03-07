@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import { CallModal } from "./CallModal";
 
 function getAuraTier(balance: number) {
-  if (balance >= 5000) return { ring: "ring-2 ring-aura-gold/50", glow: "shadow-[0_0_10px_hsl(var(--aura-gold)/0.4)]" };
-  if (balance >= 2000) return { ring: "ring-2 ring-accent/40", glow: "shadow-[0_0_8px_hsl(var(--accent)/0.3)]" };
-  if (balance >= 500) return { ring: "ring-1 ring-primary/30", glow: "shadow-[0_0_6px_hsl(var(--primary)/0.2)]" };
+  if (balance >= 5000) return { ring: "ring-2 ring-aura-gold/50", glow: "shadow-[0_0_12px_hsl(var(--aura-gold)/0.35)]" };
+  if (balance >= 2000) return { ring: "ring-2 ring-accent/40", glow: "shadow-[0_0_10px_hsl(var(--accent)/0.25)]" };
+  if (balance >= 500) return { ring: "ring-1 ring-primary/30", glow: "shadow-[0_0_8px_hsl(var(--primary)/0.2)]" };
   return { ring: "", glow: "" };
 }
 
@@ -44,10 +44,10 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
   const tier = getAuraTier(otherUser?.aurix_balance || 0);
   const isOnline = (otherUser?.streak_count || 0) > 0;
 
-  const energyColors = {
-    calm: "from-primary/20 via-transparent",
-    active: "from-primary/50 via-primary/20",
-    intense: "from-accent/60 via-primary/30",
+  const energyConfig = {
+    calm: { gradient: "from-primary/15 via-primary/5 to-transparent", speed: 4 },
+    active: { gradient: "from-primary/40 via-accent/15 to-transparent", speed: 2 },
+    intense: { gradient: "from-accent/50 via-primary/25 to-transparent", speed: 1 },
   };
 
   const handleCall = (type: "voice" | "video") => {
@@ -87,12 +87,12 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
     <>
       <div className="relative z-10">
         {/* Main header bar */}
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-card/50 backdrop-blur-xl border-b border-border/20">
+        <div className="flex items-center gap-2 px-3 py-2.5 bg-card/40 backdrop-blur-xl border-b border-border/15">
           {/* Back button */}
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.88 }}
             onClick={onBack}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60 transition-colors md:hidden shrink-0"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/50 transition-colors md:hidden shrink-0"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </motion.button>
@@ -103,7 +103,7 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
             className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
           >
             <div className="relative shrink-0">
-              <div className={cn("rounded-full", tier.ring, tier.glow)}>
+              <div className={cn("rounded-full transition-shadow duration-500", tier.ring, tier.glow)}>
                 <Avatar className="w-9 h-9">
                   <AvatarImage src={otherUser?.avatar_url || ""} />
                   <AvatarFallback className="bg-muted font-display font-bold text-sm">
@@ -111,70 +111,85 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <div className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card",
-                isOnline
-                  ? "bg-aura-mint shadow-[0_0_5px_hsl(var(--aura-mint)/0.6)]"
-                  : "bg-muted-foreground/30"
-              )} />
+              <motion.div
+                className={cn(
+                  "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card",
+                  isOnline
+                    ? "bg-aura-mint"
+                    : "bg-muted-foreground/30"
+                )}
+                animate={isOnline ? { boxShadow: ["0 0 0px hsl(var(--aura-mint)/0)", "0 0 8px hsl(var(--aura-mint)/0.6)", "0 0 0px hsl(var(--aura-mint)/0)"] } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </div>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">
                   {otherUser?.username || "..."}
                 </p>
                 {isBlocked && (
-                  <span className="text-[9px] px-1 py-px rounded bg-destructive/20 text-destructive font-medium">
+                  <span className="text-[9px] px-1.5 py-px rounded-full bg-destructive/15 text-destructive font-semibold">
                     Blocked
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground truncate leading-tight">
-                {isOnline ? "● Active" : "○ Offline"} · {getRank(otherUser?.aurix_balance || 0)}
+              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                {isOnline ? (
+                  <span className="text-aura-mint">● Active</span>
+                ) : (
+                  <span>○ Offline</span>
+                )} · {getRank(otherUser?.aurix_balance || 0)}
               </p>
             </div>
           </button>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            {/* Voice call */}
+          <div className="flex items-center gap-0.5 shrink-0">
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.88 }}
               onClick={() => handleCall("voice")}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
               title="Voice call"
             >
-              <Phone className="w-4 h-4 text-foreground" />
+              <Phone className="w-[18px] h-[18px]" />
             </motion.button>
 
-            {/* Video call */}
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.88 }}
               onClick={() => handleCall("video")}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
               title="Video call"
             >
-              <Video className="w-4 h-4 text-foreground" />
+              <Video className="w-[18px] h-[18px]" />
             </motion.button>
 
-            {/* More menu */}
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.88 }}
               onClick={() => { setShowMenu(!showMenu); setShowPopover(false); }}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary/50 transition-all"
             >
-              <MoreVertical className="w-4 h-4 text-foreground" />
+              <MoreVertical className="w-[18px] h-[18px] text-foreground/70" />
             </motion.button>
           </div>
         </div>
 
-        {/* Energy gradient line */}
-        <motion.div
-          className={cn("h-0.5 w-full bg-gradient-to-r to-transparent", energyColors[energy])}
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: energy === "intense" ? 1 : energy === "active" ? 2 : 4, repeat: Infinity }}
-        />
+        {/* Energy gradient line - animated pulse */}
+        <div className="relative h-[2px] w-full overflow-hidden">
+          <motion.div
+            className={cn("absolute inset-0 bg-gradient-to-r", energyConfig[energy].gradient)}
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: energyConfig[energy].speed, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {energy === "intense" && (
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              style={{ width: "30%" }}
+            />
+          )}
+        </div>
 
         {/* Backdrop for menus */}
         <AnimatePresence>
@@ -193,43 +208,43 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
         <AnimatePresence>
           {showMenu && (
             <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.95 }}
+              initial={{ opacity: 0, y: -8, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 26 }}
-              className="absolute top-full right-3 mt-1 w-48 z-50 rounded-xl bg-card/95 backdrop-blur-xl border border-border/40 shadow-xl overflow-hidden"
+              exit={{ opacity: 0, y: -8, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 450, damping: 28 }}
+              className="absolute top-full right-3 mt-1.5 w-48 z-50 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/30 shadow-2xl shadow-black/30 overflow-hidden"
             >
               <button
                 onClick={() => { navigate(`/profile/${otherUser?.username}`); setShowMenu(false); }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-secondary/40 transition-colors"
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-secondary/40 transition-colors"
               >
                 View profile
               </button>
-              <div className="h-px bg-border/30 mx-2" />
+              <div className="h-px bg-border/20 mx-3" />
               <button
                 onClick={() => { handleCall("voice"); }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-secondary/40 transition-colors"
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-secondary/40 transition-colors"
               >
                 <Phone className="w-4 h-4" /> Voice call
               </button>
               <button
                 onClick={() => { handleCall("video"); }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-secondary/40 transition-colors"
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-secondary/40 transition-colors"
               >
                 <Video className="w-4 h-4" /> Video call
               </button>
-              <div className="h-px bg-border/30 mx-2" />
+              <div className="h-px bg-border/20 mx-3" />
               {isBlocked ? (
                 <button
                   onClick={handleUnblock}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-primary hover:bg-primary/10 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-primary hover:bg-primary/10 transition-colors"
                 >
                   <ShieldBan className="w-4 h-4" /> Unblock user
                 </button>
               ) : (
                 <button
                   onClick={() => { setShowBlockConfirm(true); setShowMenu(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   <UserX className="w-4 h-4" /> Block user
                 </button>
@@ -242,55 +257,55 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
         <AnimatePresence>
           {showPopover && (
             <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              initial={{ opacity: 0, y: -10, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="absolute top-full left-3 right-3 md:left-16 md:right-auto md:w-64 z-50 mt-1.5 p-4 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/40 shadow-xl"
+              exit={{ opacity: 0, y: -10, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 450, damping: 28 }}
+              className="absolute top-full left-3 right-3 md:left-16 md:right-auto md:w-72 z-50 mt-2 p-5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/30 shadow-2xl shadow-black/30"
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-4">
                 <div className={cn("rounded-full", tier.ring, tier.glow)}>
-                  <Avatar className="w-12 h-12">
+                  <Avatar className="w-14 h-14">
                     <AvatarImage src={otherUser?.avatar_url || ""} />
-                    <AvatarFallback className="bg-muted font-display font-bold">
+                    <AvatarFallback className="bg-muted font-display font-bold text-lg">
                       {otherUser?.username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">{otherUser?.username}</p>
+                  <p className="font-bold text-foreground truncate">{otherUser?.username}</p>
                   <p className="text-xs text-muted-foreground truncate">{otherUser?.college_name || "No college"}</p>
                 </div>
-                <button onClick={() => setShowPopover(false)} className="text-muted-foreground hover:text-foreground">
+                <button onClick={() => setShowPopover(false)} className="text-muted-foreground hover:text-foreground transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-1.5 text-xs mb-3">
-                <div className="bg-secondary/40 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-foreground text-[10px] mb-0.5">Rank</p>
-                  <p className="font-semibold text-foreground">{getRank(otherUser?.aurix_balance || 0)}</p>
+              <div className="grid grid-cols-3 gap-2 text-xs mb-4">
+                <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/10">
+                  <p className="text-muted-foreground text-[10px] mb-1 font-medium">Rank</p>
+                  <p className="font-bold text-foreground">{getRank(otherUser?.aurix_balance || 0)}</p>
                 </div>
-                <div className="bg-secondary/40 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-foreground text-[10px] mb-0.5">AURIX</p>
-                  <p className="font-semibold text-primary">{(otherUser?.aurix_balance || 0).toLocaleString()}</p>
+                <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/10">
+                  <p className="text-muted-foreground text-[10px] mb-1 font-medium">AURIX</p>
+                  <p className="font-bold text-primary">{(otherUser?.aurix_balance || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-secondary/40 rounded-xl p-2.5 text-center">
-                  <p className="text-muted-foreground text-[10px] mb-0.5">Streak</p>
+                <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/10">
+                  <p className="text-muted-foreground text-[10px] mb-1 font-medium">Streak</p>
                   <div className="flex items-center justify-center gap-0.5">
                     {(otherUser?.streak_count || 0) > 3 ? (
                       <TrendingUp className="w-3 h-3 text-aura-mint" />
                     ) : (
                       <TrendingDown className="w-3 h-3 text-muted-foreground" />
                     )}
-                    <span className="font-semibold">{otherUser?.streak_count || 0}d</span>
+                    <span className="font-bold">{otherUser?.streak_count || 0}d</span>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={() => { navigate(`/profile/${otherUser?.username}`); setShowPopover(false); }}
-                className="w-full text-xs text-center py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                className="w-full text-xs text-center py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all font-semibold"
               >
                 View full profile →
               </button>
@@ -317,27 +332,27 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
               transition={{ type: "spring", stiffness: 380, damping: 28 }}
               className="fixed inset-0 z-[91] flex items-center justify-center p-6"
             >
-              <div className="w-full max-w-xs rounded-2xl bg-card border border-border/40 shadow-2xl p-6">
+              <div className="w-full max-w-xs rounded-2xl bg-card border border-border/30 shadow-2xl p-6">
                 <div className="flex flex-col items-center text-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-destructive" />
+                  <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <AlertTriangle className="w-7 h-7 text-destructive" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">Block @{otherUser?.username}?</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <h3 className="font-bold text-foreground text-base">Block @{otherUser?.username}?</h3>
+                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                       They won't be able to see your profile or message you. You can unblock them anytime.
                     </p>
                   </div>
-                  <div className="flex gap-2 w-full mt-1">
+                  <div className="flex gap-2 w-full mt-2">
                     <button
                       onClick={() => setShowBlockConfirm(false)}
-                      className="flex-1 py-2.5 rounded-xl border border-border/40 text-sm text-foreground hover:bg-secondary/40 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl border border-border/30 text-sm text-foreground hover:bg-secondary/40 transition-colors font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleBlock}
-                      className="flex-1 py-2.5 rounded-xl bg-destructive text-white text-sm font-medium hover:bg-destructive/90 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl bg-destructive text-white text-sm font-semibold hover:bg-destructive/90 transition-colors"
                     >
                       Block
                     </button>
