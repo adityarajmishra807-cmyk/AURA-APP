@@ -39,40 +39,26 @@ const rarityColors: Record<string, string> = {
   legendary: "text-amber-400 border-amber-400/30 bg-amber-400/5",
 };
 
-const mergeCosmeticClass = (base: string, preview?: string | null) =>
-  preview ? `${base} ${preview}` : base;
-
-const getGradientTextStyle = (previewValue?: string | null) =>
-  previewValue?.includes("text-transparent")
-    ? ({
-        WebkitTextFillColor: "transparent" as const,
-        WebkitBackgroundClip: "text" as const,
-        backgroundClip: "text" as const,
-      } as const)
-    : undefined;
-
 function ItemPreview({ item }: { item: ShopItem }) {
   if (item.category === "frame") {
+    const fp = cosmeticProps("w-14 h-14 rounded-full bg-muted flex items-center justify-center", item.preview_value);
     return (
-      <div className={mergeCosmeticClass("w-14 h-14 rounded-full bg-muted flex items-center justify-center", item.preview_value)}>
+      <div className={fp.className} style={fp.style}>
         <span className="text-lg">👤</span>
       </div>
     );
   }
   if (item.category === "name_color") {
+    const np = nameColorProps("font-display font-bold text-base inline-block", item.preview_value);
     return (
-      <span
-        className={mergeCosmeticClass("font-display font-bold text-base inline-block", item.preview_value)}
-        style={getGradientTextStyle(item.preview_value)}
-      >
+      <span className={np.className} style={np.style}>
         @user
       </span>
     );
   }
   if (item.category === "theme") {
-    return (
-      <div className={mergeCosmeticClass("w-full h-14 rounded-xl", item.preview_value)} />
-    );
+    const tp = cosmeticProps("w-full h-14 rounded-xl", item.preview_value);
+    return <div className={tp.className} style={tp.style} />;
   }
   if (item.category === "badge") {
     return <span className="text-3xl">{item.preview_value}</span>;
