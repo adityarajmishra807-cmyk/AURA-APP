@@ -11,6 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Button } from "@/components/ui/button";
 import { Trophy, Coins, Flame, Crown, Medal, ChevronsUpDown, Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { cosmeticProps, nameColorProps } from "@/lib/cosmeticStyles";
 
 interface LeaderboardEntry {
   rank: number;
@@ -125,17 +126,7 @@ export default function Leaderboard() {
 
   const isTopThree = (rank: number) => rank <= 3;
 
-  const mergeCosmeticClass = (base: string, preview?: string | null) =>
-    preview ? `${base} ${preview}` : base;
-
-  const getNameStyle = (nameColor?: string | null) =>
-    nameColor?.includes("text-transparent")
-      ? ({
-          WebkitTextFillColor: "transparent" as const,
-          WebkitBackgroundClip: "text" as const,
-          backgroundClip: "text" as const,
-        } as const)
-      : undefined;
+  // Use fallback renderer for cosmetics
 
   return (
     <DashboardLayout>
