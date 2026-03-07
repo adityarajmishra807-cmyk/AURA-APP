@@ -233,7 +233,7 @@ export default function Leaderboard() {
                 <div className="w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
                 <Link to={`/profile/${entry.username}`}>
                   <div className="relative">
-                    <Avatar className={mergeCosmeticClass("w-10 h-10 border border-border", cosmetics[entry.username]?.frame)}>
+                    <Avatar {...cosmeticProps("w-10 h-10 border border-border", cosmetics[entry.username]?.frame)}>
                       <AvatarImage src={entry.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-xs font-bold">
                         {entry.username?.[0]?.toUpperCase()}
@@ -244,8 +244,7 @@ export default function Leaderboard() {
                 <div className="flex-1 min-w-0">
                   <Link to={`/profile/${entry.username}`} className="text-sm font-semibold truncate flex items-center gap-1">
                     <span
-                      className={mergeCosmeticClass("text-foreground inline-block", cosmetics[entry.username]?.nameColor)}
-                      style={getNameStyle(cosmetics[entry.username]?.nameColor)}
+                      {...nameColorProps("text-foreground inline-block", cosmetics[entry.username]?.nameColor)}
                     >
                       @{entry.username}
                     </span>
@@ -294,7 +293,7 @@ export default function Leaderboard() {
                     {getRankIcon(entry.rank)}
                   </div>
                   <Link to={`/profile/${entry.username}`}>
-                    <Avatar className={mergeCosmeticClass("w-8 h-8 md:w-9 md:h-9 border border-border", cosmetics[entry.username]?.frame)}>
+                    <Avatar {...cosmeticProps("w-8 h-8 md:w-9 md:h-9 border border-border", cosmetics[entry.username]?.frame)}>
                       <AvatarImage src={entry.avatar_url || ""} />
                       <AvatarFallback className="bg-muted text-[10px] md:text-xs font-bold">
                         {entry.username?.[0]?.toUpperCase()}
@@ -304,8 +303,7 @@ export default function Leaderboard() {
                   <div className="flex-1 min-w-0">
                     <Link to={`/profile/${entry.username}`} className="text-xs md:text-sm font-semibold truncate flex items-center gap-1">
                       <span
-                        className={mergeCosmeticClass("text-foreground truncate inline-block max-w-full", cosmetics[entry.username]?.nameColor)}
-                        style={getNameStyle(cosmetics[entry.username]?.nameColor)}
+                        {...nameColorProps("text-foreground truncate inline-block max-w-full", cosmetics[entry.username]?.nameColor)}
                       >
                         @{entry.username}
                       </span>
