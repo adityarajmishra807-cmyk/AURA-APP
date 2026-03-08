@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ShopGridSkeleton } from "@/components/skeletons/Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
