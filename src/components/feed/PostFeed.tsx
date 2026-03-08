@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
 import { PullToRefresh } from "./PullToRefresh";
+import { PostFeedSkeleton } from "@/components/skeletons/Skeletons";
 import { Sparkles, RefreshCw, Users, Globe, Loader2, TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAchievements } from "@/hooks/useAchievements";

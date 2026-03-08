@@ -269,7 +269,7 @@ export default function Leaderboard() {
         {/* Leaderboard list */}
         <div className="glass-card rounded-2xl overflow-hidden">
           {loading ? (
-            <div className="p-6 md:p-8 text-center text-muted-foreground animate-pulse text-sm">Loading rankings...</div>
+            <LeaderboardSkeleton />
           ) : entries.length === 0 ? (
             <div className="p-6 md:p-8 text-center text-muted-foreground text-sm">No entries yet</div>
           ) : (

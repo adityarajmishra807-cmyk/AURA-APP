@@ -182,15 +182,7 @@ export function ConversationList() {
               className="space-y-0.5 p-1"
             >
               {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl animate-pulse">
-                    <div className="w-12 h-12 rounded-full bg-muted/50" />
-                    <div className="flex-1 space-y-2.5">
-                      <div className="h-4 w-28 rounded-lg bg-muted/50" />
-                      <div className="h-3 w-44 rounded-lg bg-muted/30" />
-                    </div>
-                  </div>
-                ))
+                <ConversationListSkeleton />
               ) : filtered.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}

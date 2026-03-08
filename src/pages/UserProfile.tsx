@@ -147,16 +147,9 @@ export default function UserProfile() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="max-w-3xl mx-auto">
-          <div className="glass-card rounded-2xl p-8 animate-pulse">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 rounded-full bg-muted" />
-              <div className="space-y-2 flex-1">
-                <div className="h-5 w-32 bg-muted rounded" />
-                <div className="h-3 w-48 bg-muted rounded" />
-              </div>
-            </div>
-          </div>
+        <div className="max-w-3xl mx-auto space-y-6">
+          <ProfileSkeleton />
+          <PostFeedSkeleton count={2} />
         </div>
       </DashboardLayout>
     );

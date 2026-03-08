@@ -38,16 +38,7 @@ export function StoryBar() {
   const currentUserHasStory = storyGroups.some((g) => g.user_id === user?.id);
 
   if (loading) {
-    return (
-      <div className="flex gap-3 px-1 py-3 overflow-x-auto scrollbar-none">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5 shrink-0">
-            <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
-            <div className="w-10 h-2 rounded bg-muted animate-pulse" />
-          </div>
-        ))}
-      </div>
-    );
+    return <StoryBarSkeleton />;
   }
 
   return (
