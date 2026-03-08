@@ -17,6 +17,7 @@ const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
     {
       urls: "turn:openrelay.metered.ca:80",
       username: "openrelayproject",
@@ -33,9 +34,10 @@ const ICE_SERVERS: RTCConfiguration = {
       credential: "openrelayproject",
     },
   ],
+  iceCandidatePoolSize: 10,
 };
 
-const RING_TIMEOUT = 30000; // 30s
+const RING_TIMEOUT = 30000;
 
 export function useWebRTC() {
   const { user } = useAuth();
@@ -59,40 +61,42 @@ export function useWebRTC() {
   const durationTimerRef = useRef<NodeJS.Timeout>();
   const ringTimeoutRef = useRef<NodeJS.Timeout>();
   const iceCandidateQueue = useRef<RTCIceCandidateInit[]>([]);
+  const callStateRef = useRef(callState);
+
+  // Keep ref in sync
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
 
   const cleanup = useCallback(() => {
-    // Stop all tracks
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
     remoteStreamRef.current = null;
 
-    // Close peer connection
     pcRef.current?.close();
     pcRef.current = null;
 
-    // Unsubscribe realtime
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
 
-    // Clear timers
     clearInterval(durationTimerRef.current);
     clearTimeout(ringTimeoutRef.current);
 
-    // Reset refs
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
 
     iceCandidateQueue.current = [];
     setDuration(0);
+    setMicMuted(false);
+    setVideoOff(false);
   }, []);
 
   const createPeerConnection = useCallback((callId: string) => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     pcRef.current = pc;
 
-    // Remote stream
     const remoteStream = new MediaStream();
     remoteStreamRef.current = remoteStream;
 
@@ -105,7 +109,6 @@ export function useWebRTC() {
       }
     };
 
-    // ICE candidates -> send via realtime
     pc.onicecandidate = (event) => {
       if (event.candidate && channelRef.current) {
         channelRef.current.send({
@@ -116,12 +119,30 @@ export function useWebRTC() {
       }
     };
 
+    pc.oniceconnectionstatechange = () => {
+      console.log("[WebRTC] ICE state:", pc.iceConnectionState);
+      if (pc.iceConnectionState === "failed") {
+        // Attempt ICE restart
+        pc.restartIce();
+      }
+    };
+
     pc.onconnectionstatechange = () => {
+      console.log("[WebRTC] Connection state:", pc.connectionState);
       if (pc.connectionState === "connected") {
         setCallState((s) => ({ ...s, status: "connected" }));
+        clearTimeout(ringTimeoutRef.current);
         durationTimerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
       }
-      if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
+      if (pc.connectionState === "disconnected") {
+        // Give it a moment to reconnect before ending
+        setTimeout(() => {
+          if (pcRef.current?.connectionState === "disconnected" || pcRef.current?.connectionState === "failed") {
+            endCall();
+          }
+        }, 5000);
+      }
+      if (pc.connectionState === "failed") {
         endCall();
       }
     };
@@ -138,35 +159,45 @@ export function useWebRTC() {
       if (payload.sender === user?.id) return;
       const pc = pcRef.current;
       if (!pc) return;
-      await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-      // Flush queued ICE candidates
-      for (const c of iceCandidateQueue.current) {
-        await pc.addIceCandidate(new RTCIceCandidate(c));
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        for (const c of iceCandidateQueue.current) {
+          await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+        }
+        iceCandidateQueue.current = [];
+      } catch (err) {
+        console.error("[WebRTC] Error setting offer:", err);
       }
-      iceCandidateQueue.current = [];
     });
 
     channel.on("broadcast", { event: "answer" }, async ({ payload }) => {
       if (payload.sender === user?.id) return;
       const pc = pcRef.current;
       if (!pc) return;
-      await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-      setCallState((s) => ({ ...s, status: "connecting" }));
-      // Flush queued ICE candidates
-      for (const c of iceCandidateQueue.current) {
-        await pc.addIceCandidate(new RTCIceCandidate(c));
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        setCallState((s) => ({ ...s, status: "connecting" }));
+        for (const c of iceCandidateQueue.current) {
+          await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+        }
+        iceCandidateQueue.current = [];
+      } catch (err) {
+        console.error("[WebRTC] Error setting answer:", err);
       }
-      iceCandidateQueue.current = [];
     });
 
     channel.on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
       if (payload.sender === user?.id) return;
       const pc = pcRef.current;
       if (!pc) return;
-      if (pc.remoteDescription) {
-        await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-      } else {
-        iceCandidateQueue.current.push(payload.candidate);
+      try {
+        if (pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        } else {
+          iceCandidateQueue.current.push(payload.candidate);
+        }
+      } catch (err) {
+        console.error("[WebRTC] Error adding ICE candidate:", err);
       }
     });
 
@@ -176,30 +207,32 @@ export function useWebRTC() {
     });
 
     channelRef.current = channel;
-    
-    // Return a promise that resolves when the channel is fully subscribed
-    return new Promise<typeof channel>((resolve) => {
+
+    return new Promise<typeof channel>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error("Channel subscribe timeout")), 10000);
       channel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          clearTimeout(timeout);
           resolve(channel);
+        }
+        if (status === "CHANNEL_ERROR") {
+          clearTimeout(timeout);
+          reject(new Error("Channel subscription failed"));
         }
       });
     });
   }, [user, cleanup]);
 
-  // CALLER: initiate call
   const startCall = useCallback(async (receiverId: string, type: CallType) => {
     if (!user) return;
 
     try {
-      // Get media
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: type === "video",
+        audio: { echoCancellation: true, noiseSuppression: true },
+        video: type === "video" ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false,
       });
       localStreamRef.current = stream;
 
-      // Create call record
       const { data: call, error } = await supabase
         .from("calls")
         .insert({ caller_id: user.id, receiver_id: receiverId, type, status: "ringing" })
@@ -216,32 +249,30 @@ export function useWebRTC() {
         remoteUserId: receiverId,
       });
 
-      // Setup signaling (wait for subscription)
       const channel = await setupChannel(call.id);
 
-      // Create peer connection
       const pc = createPeerConnection(call.id);
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-      // Create and send offer
-      const offer = await pc.createOffer();
+      const offer = await pc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: type === "video",
+      });
       await pc.setLocalDescription(offer);
 
-      // Store offer in DB for late joiners
       await supabase.from("calls").update({ offer: offer as any }).eq("id", call.id);
 
-      // Also broadcast
       channel.send({
         type: "broadcast",
         event: "offer",
         payload: { sdp: offer, sender: user.id },
       });
 
-      // Ring timeout
       ringTimeoutRef.current = setTimeout(async () => {
-        if (callState.status === "ringing" || pcRef.current?.connectionState !== "connected") {
+        const currentState = callStateRef.current;
+        if (currentState.status === "ringing" || (pcRef.current && pcRef.current.connectionState !== "connected")) {
           await supabase.from("calls").update({ status: "missed", ended_at: new Date().toISOString() }).eq("id", call.id);
           setCallState((s) => ({ ...s, status: "missed" }));
           cleanup();
@@ -256,40 +287,34 @@ export function useWebRTC() {
     }
   }, [user, setupChannel, createPeerConnection, cleanup]);
 
-  // RECEIVER: accept call
   const acceptCall = useCallback(async (callId: string, type: CallType) => {
     if (!user) return;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: type === "video",
+        audio: { echoCancellation: true, noiseSuppression: true },
+        video: type === "video" ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false,
       });
       localStreamRef.current = stream;
 
       setCallState((s) => ({ ...s, status: "connecting" }));
 
-      // Setup signaling (wait for subscription)
       await setupChannel(callId);
 
-      // Create peer connection
       const pc = createPeerConnection(callId);
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-      // Get offer from DB
       const { data: call } = await supabase.from("calls").select("offer").eq("id", callId).single();
       if (call?.offer) {
         await pc.setRemoteDescription(new RTCSessionDescription(call.offer as any));
-        // Flush queued ICE candidates
         for (const c of iceCandidateQueue.current) {
-          await pc.addIceCandidate(new RTCIceCandidate(c));
+          await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
         }
         iceCandidateQueue.current = [];
       }
 
-      // Create and send answer
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
@@ -308,7 +333,6 @@ export function useWebRTC() {
     }
   }, [user, setupChannel, createPeerConnection, cleanup]);
 
-  // RECEIVER: reject call
   const rejectCall = useCallback(async (callId: string) => {
     await supabase.from("calls").update({ status: "rejected", ended_at: new Date().toISOString() }).eq("id", callId);
     channelRef.current?.send({ type: "broadcast", event: "hangup", payload: {} });
@@ -316,18 +340,16 @@ export function useWebRTC() {
     setCallState({ callId: null, status: "idle", type: "audio", isCaller: false, remoteUserId: null });
   }, [cleanup]);
 
-  // End call (either side)
   const endCall = useCallback(async () => {
-    const id = callState.callId;
+    const id = callStateRef.current.callId;
     if (id) {
       await supabase.from("calls").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", id);
     }
     channelRef.current?.send({ type: "broadcast", event: "hangup", payload: {} });
     cleanup();
     setCallState({ callId: null, status: "idle", type: "audio", isCaller: false, remoteUserId: null });
-  }, [callState.callId, cleanup]);
+  }, [cleanup]);
 
-  // Toggle mic
   const toggleMic = useCallback(() => {
     const audioTrack = localStreamRef.current?.getAudioTracks()[0];
     if (audioTrack) {
@@ -336,7 +358,6 @@ export function useWebRTC() {
     }
   }, []);
 
-  // Toggle video
   const toggleVideo = useCallback(() => {
     const videoTrack = localStreamRef.current?.getVideoTracks()[0];
     if (videoTrack) {
@@ -345,7 +366,6 @@ export function useWebRTC() {
     }
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanup();
