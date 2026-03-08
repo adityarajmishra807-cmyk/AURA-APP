@@ -94,11 +94,26 @@ export function useNotifications() { // force rebuild
     }
   }, [user]);
 
-  // Realtime subscription with reconnection
+  // Realtime subscription with polling fallback
   useEffect(() => {
     fetchNotifications();
 
     if (!user) return;
+
+    let pollingInterval: ReturnType<typeof setInterval> | null = null;
+    let realtimeActive = false;
+
+    const startPolling = () => {
+      if (pollingInterval) return;
+      pollingInterval = setInterval(fetchNotifications, 30000); // 30s fallback
+    };
+
+    const stopPolling = () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+    };
 
     const subscribe = () => {
       channelRef.current = supabase
@@ -114,46 +129,46 @@ export function useNotifications() { // force rebuild
           (payload) => {
             const newNotif = payload.new as AppNotification;
             setNotifications((prev) => {
-              // Deduplicate
               if (prev.some((n) => n.id === newNotif.id)) return prev;
               return [newNotif, ...prev];
             });
             setUnreadCount((c) => c + 1);
 
-            // Browser notification
             if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
               try {
                 new window.Notification(newNotif.title, {
                   body: newNotif.body,
                   icon: "/favicon.ico",
-                  tag: newNotif.id, // prevents duplicate OS notifications
+                  tag: newNotif.id,
                 });
-              } catch {
-                // Notification API not available in this context
-              }
+              } catch {}
             }
           }
         )
         .subscribe((status) => {
-          if (status === "CHANNEL_ERROR") {
-            // Retry with backoff
-            const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+          if (status === "SUBSCRIBED") {
+            realtimeActive = true;
+            retryCountRef.current = 0;
+            stopPolling(); // realtime works, no need to poll
+          } else if (status === "CHANNEL_ERROR") {
+            realtimeActive = false;
+            startPolling(); // fall back to polling
+            const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 60000);
             retryCountRef.current++;
             setTimeout(() => {
-              if (channelRef.current) {
-                supabase.removeChannel(channelRef.current);
-              }
+              if (channelRef.current) supabase.removeChannel(channelRef.current);
               subscribe();
             }, delay);
-          } else if (status === "SUBSCRIBED") {
-            retryCountRef.current = 0;
           }
         });
     };
 
     subscribe();
+    // Start polling initially until realtime confirms
+    startPolling();
 
     return () => {
+      stopPolling();
       if (channelRef.current) supabase.removeChannel(channelRef.current);
     };
   }, [fetchNotifications, user]);
