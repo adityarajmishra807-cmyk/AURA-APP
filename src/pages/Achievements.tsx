@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AchievementGridSkeleton } from "@/components/skeletons/Skeletons";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
