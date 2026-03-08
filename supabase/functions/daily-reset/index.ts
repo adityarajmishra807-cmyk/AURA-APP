@@ -47,6 +47,9 @@ Deno.serve(async (req) => {
       .delete()
       .lt("expires_at", twoDaysAgo);
 
+    // Refresh leaderboard materialized view
+    await supabase.rpc("refresh_leaderboard_cache");
+
     console.log("Daily reset completed successfully");
     return new Response(
       JSON.stringify({ success: true, timestamp: new Date().toISOString() }),
