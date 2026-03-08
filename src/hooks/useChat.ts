@@ -97,8 +97,9 @@ export function useChatMessages(conversationId: string | null) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
