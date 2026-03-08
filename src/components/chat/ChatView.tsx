@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatMessages } from "@/hooks/useChat";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Send, X, CornerDownLeft, ChevronDown, Smile, Mic, Square } from "lucide-react";
@@ -11,11 +12,12 @@ import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ChatBubble } from "./ChatBubble";
 import { ChatHeader } from "./ChatHeader";
 import { AmbientBackground } from "./AmbientBackground";
+import { TypingIndicator } from "./TypingIndicator";
 import { EmojiPicker } from "./EmojiPicker";
 
 export function ChatView() {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { messages, loading, sendMessage, toggleReaction } = useChatMessages(conversationId || null);
+  const { messages, loading, sendMessage, toggleReaction, otherTyping, broadcastTyping } = useChatMessages(conversationId || null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [input, setInput] = useState("");
@@ -302,6 +304,14 @@ export function ChatView() {
             </div>
           ))
         )}
+        <AnimatePresence>
+          {otherTyping && (
+            <TypingIndicator
+              username={otherUser?.username}
+              avatarUrl={otherUser?.avatar_url}
+            />
+          )}
+        </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
 
@@ -400,7 +410,7 @@ export function ChatView() {
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
             onKeyDown={handleKeyDown}
             placeholder={isRecording ? "Recording voice…" : "Message…"}
             rows={1}

@@ -97,8 +97,9 @@ export function useChatMessages(conversationId: string | null) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
@@ -190,6 +191,32 @@ export function useChatMessages(conversationId: string | null) {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId, fetchMessages]);
 
+  // Typing broadcast channel
+  useEffect(() => {
+    if (!conversationId || !user) return;
+    const ch = supabase.channel(`typing-${conversationId}`);
+    ch.on("broadcast", { event: "typing" }, (payload: any) => {
+      if (payload.payload?.user_id !== user.id) {
+        setOtherTyping(true);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3000);
+      }
+    }).subscribe();
+    broadcastChannelRef.current = ch;
+    return () => {
+      supabase.removeChannel(ch);
+      broadcastChannelRef.current = null;
+    };
+  }, [conversationId, user]);
+
+  const broadcastTyping = useCallback(() => {
+    broadcastChannelRef.current?.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: user?.id },
+    });
+  }, [user]);
+
   const sendMessage = useCallback(async (content: string, replyToId?: string) => {
     if (!conversationId || !user || !content.trim()) return;
     await supabase.from("messages").insert({
@@ -212,7 +239,7 @@ export function useChatMessages(conversationId: string | null) {
     }
   }, [user, messages]);
 
-  return { messages, loading, sendMessage, toggleReaction, isTyping };
+  return { messages, loading, sendMessage, toggleReaction, otherTyping, broadcastTyping };
 }
 
 export function useStartConversation() {
