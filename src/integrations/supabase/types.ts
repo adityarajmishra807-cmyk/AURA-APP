@@ -490,6 +490,13 @@ export type Database = {
             foreignKeyName: "posts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "leaderboard_cache"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -758,6 +765,13 @@ export type Database = {
             foreignKeyName: "stories_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "leaderboard_cache"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "stories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -949,7 +963,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_cache: {
+        Row: {
+          aurix_balance: number | null
+          avatar_url: string | null
+          college_id: string | null
+          rank: number | null
+          streak_count: number | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_achievements: { Args: never; Returns: Json }
@@ -1007,6 +1040,7 @@ export type Database = {
         Returns: undefined
       }
       purchase_shop_item: { Args: { p_item_id: string }; Returns: Json }
+      refresh_leaderboard_cache: { Args: never; Returns: undefined }
       register_referral: { Args: { p_referral_code: string }; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
