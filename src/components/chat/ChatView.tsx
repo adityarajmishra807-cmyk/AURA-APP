@@ -410,7 +410,7 @@ export function ChatView() {
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
             onKeyDown={handleKeyDown}
             placeholder={isRecording ? "Recording voice…" : "Message…"}
             rows={1}
