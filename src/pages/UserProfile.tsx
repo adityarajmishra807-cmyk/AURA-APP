@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { ProfileSkeleton, PostFeedSkeleton } from "@/components/skeletons/Skeletons";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
