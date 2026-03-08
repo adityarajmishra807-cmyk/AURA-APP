@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { StoryBarSkeleton } from "@/components/skeletons/Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuraLogo } from "@/components/ui/AuraLogo";
 import storyFrame from "@/assets/story-frame.png";
