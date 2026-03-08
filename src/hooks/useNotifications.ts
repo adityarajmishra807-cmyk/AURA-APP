@@ -13,7 +13,7 @@ export interface AppNotification {
   created_at: string;
 }
 
-export function useNotifications() {
+export function useNotifications() { // force rebuild
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
