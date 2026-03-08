@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { LeaderboardSkeleton } from "@/components/skeletons/Skeletons";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
