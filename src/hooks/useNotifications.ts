@@ -19,81 +19,139 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const channelRef = useRef<any>(null);
+  const retryCountRef = useRef(0);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-    if (data) {
-      setNotifications(data as AppNotification[]);
-      setUnreadCount(data.filter((n: any) => !n.read).length);
+      if (error) {
+        console.error("Failed to fetch notifications:", error.message);
+        return;
+      }
+
+      if (data) {
+        setNotifications(data as AppNotification[]);
+        setUnreadCount(data.filter((n: any) => !n.read).length);
+      }
+    } catch (err) {
+      console.error("Notification fetch error:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [user]);
 
   const markAsRead = useCallback(async (id: string) => {
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    setUnreadCount((c) => Math.max(0, c - 1));
-  }, []);
+    if (!user) return;
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", id)
+      .eq("user_id", user.id);
+    
+    if (!error) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    }
+  }, [user]);
 
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
-    await supabase
+    const { error } = await supabase
       .from("notifications")
       .update({ read: true })
       .eq("user_id", user.id)
       .eq("read", false);
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnreadCount(0);
+    
+    if (!error) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    }
   }, [user]);
 
   const deleteNotification = useCallback(async (id: string) => {
-    await supabase.from("notifications").delete().eq("id", id);
-    setNotifications((prev) => {
-      const n = prev.find((x) => x.id === id);
-      if (n && !n.read) setUnreadCount((c) => Math.max(0, c - 1));
-      return prev.filter((x) => x.id !== id);
-    });
-  }, []);
+    if (!user) return;
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+    
+    if (!error) {
+      setNotifications((prev) => {
+        const n = prev.find((x) => x.id === id);
+        if (n && !n.read) setUnreadCount((c) => Math.max(0, c - 1));
+        return prev.filter((x) => x.id !== id);
+      });
+    }
+  }, [user]);
 
+  // Realtime subscription with reconnection
   useEffect(() => {
     fetchNotifications();
 
     if (!user) return;
 
-    channelRef.current = supabase
-      .channel("notifications-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newNotif = payload.new as AppNotification;
-          setNotifications((prev) => [newNotif, ...prev]);
-          setUnreadCount((c) => c + 1);
-
-          // Browser push notification if permission granted
-          if (Notification.permission === "granted") {
-            new window.Notification(newNotif.title, {
-              body: newNotif.body,
-              icon: "/favicon.ico",
+    const subscribe = () => {
+      channelRef.current = supabase
+        .channel(`notifications-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const newNotif = payload.new as AppNotification;
+            setNotifications((prev) => {
+              // Deduplicate
+              if (prev.some((n) => n.id === newNotif.id)) return prev;
+              return [newNotif, ...prev];
             });
+            setUnreadCount((c) => c + 1);
+
+            // Browser notification
+            if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+              try {
+                new window.Notification(newNotif.title, {
+                  body: newNotif.body,
+                  icon: "/favicon.ico",
+                  tag: newNotif.id, // prevents duplicate OS notifications
+                });
+              } catch {
+                // Notification API not available in this context
+              }
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR") {
+            // Retry with backoff
+            const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+            retryCountRef.current++;
+            setTimeout(() => {
+              if (channelRef.current) {
+                supabase.removeChannel(channelRef.current);
+              }
+              subscribe();
+            }, delay);
+          } else if (status === "SUBSCRIBED") {
+            retryCountRef.current = 0;
+          }
+        });
+    };
+
+    subscribe();
 
     return () => {
       if (channelRef.current) supabase.removeChannel(channelRef.current);
@@ -101,9 +159,13 @@ export function useNotifications() {
   }, [fetchNotifications, user]);
 
   const requestPushPermission = useCallback(async () => {
-    if (!("Notification" in window)) return false;
-    const result = await window.Notification.requestPermission();
-    return result === "granted";
+    if (typeof window === "undefined" || !("Notification" in window)) return false;
+    try {
+      const result = await window.Notification.requestPermission();
+      return result === "granted";
+    } catch {
+      return false;
+    }
   }, []);
 
   return {

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Video, PhoneOff } from "lucide-react";
+import { Phone, Video, PhoneOff, Mic, MicOff, VideoOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { toast } from "sonner";
 
@@ -32,14 +33,35 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
   } = useWebRTC();
 
   const [accepted, setAccepted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const isVideo = call.type === "video";
+
+  // Pipe remote stream to audio element for voice calls
+  useEffect(() => {
+    if (!accepted || isVideo || !audioRef.current || !remoteVideoRef.current) return;
+    const interval = setInterval(() => {
+      if (remoteVideoRef.current?.srcObject && audioRef.current) {
+        audioRef.current.srcObject = remoteVideoRef.current.srcObject;
+        clearInterval(interval);
+      }
+    }, 150);
+    return () => clearInterval(interval);
+  }, [accepted, isVideo, remoteVideoRef]);
+
+  // Auto-dismiss on terminal states
+  useEffect(() => {
+    if (accepted && ["ended", "missed", "rejected"].includes(callState.status)) {
+      const timeout = setTimeout(onDismiss, 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [accepted, callState.status, onDismiss]);
 
   const handleAccept = async () => {
     try {
       setAccepted(true);
       await acceptCall(call.id, call.type);
     } catch {
-      toast.error("Failed to connect call");
+      toast.error("Failed to connect — check mic/camera permissions");
       onDismiss();
     }
   };
@@ -62,7 +84,7 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
 
   const status = callState.status;
 
-  // If not yet accepted, show ringing UI
+  // Ringing UI (not yet accepted)
   if (!accepted) {
     return (
       <motion.div
@@ -94,7 +116,6 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              {/* Ripple */}
               {[1, 2, 3].map((i) => (
                 <motion.div
                   key={i}
@@ -115,7 +136,6 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
             </motion.p>
 
             <div className="flex items-center gap-6 mt-8">
-              {/* Reject */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleReject}
@@ -124,13 +144,16 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
                 <PhoneOff className="w-6 h-6 text-white" />
               </motion.button>
 
-              {/* Accept */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleAccept}
                 className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
               >
-                {isVideo ? <Video className="w-6 h-6 text-primary-foreground" /> : <Phone className="w-6 h-6 text-primary-foreground" />}
+                {isVideo ? (
+                  <Video className="w-6 h-6 text-primary-foreground" />
+                ) : (
+                  <Phone className="w-6 h-6 text-primary-foreground" />
+                )}
               </motion.button>
             </div>
           </div>
@@ -139,7 +162,7 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
     );
   }
 
-  // Active call UI (after accepting)
+  // Active call UI
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -148,6 +171,16 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
       className="fixed inset-0 z-[100] flex items-center justify-center"
     >
       <div className="absolute inset-0 bg-background/90 backdrop-blur-2xl" />
+
+      {/* Ambient glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, hsl(var(--primary)), transparent 70%)" }}
+          animate={status === "connected" ? { scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] } : {}}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+      </div>
 
       <motion.div
         initial={{ scale: 0.9 }}
@@ -160,54 +193,71 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              className={`absolute inset-0 w-full h-full object-cover ${status !== "connected" ? "hidden" : ""}`}
+              className={cn("absolute inset-0 w-full h-full object-cover", status !== "connected" && "hidden")}
             />
             {status !== "connected" && (
               <div className="flex items-center justify-center h-full text-muted-foreground/40 text-xs">
-                Connecting…
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-muted/40 mx-auto mb-2 flex items-center justify-center">
+                    <Video className="w-5 h-5 opacity-40" />
+                  </div>
+                  Connecting…
+                </div>
               </div>
             )}
-            <div className="absolute bottom-3 right-3 w-20 h-28 rounded-xl bg-muted/50 border border-border/30 overflow-hidden">
-              <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            <div className="absolute bottom-3 right-3 w-20 h-28 rounded-xl bg-muted/50 border border-border/30 overflow-hidden shadow-lg">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={cn("w-full h-full object-cover", videoOff && "hidden")}
+              />
+              {videoOff && (
+                <div className="flex items-center justify-center h-full">
+                  <span className="text-[10px] text-muted-foreground">Camera off</span>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {!isVideo && <video ref={localVideoRef} className="hidden" />}
-        {!isVideo && <video ref={remoteVideoRef} className="hidden" />}
-        {!isVideo && (
-          <audio
-            ref={(el) => {
-              if (el && remoteVideoRef.current) {
-                const interval = setInterval(() => {
-                  if (remoteVideoRef.current?.srcObject) {
-                    el.srcObject = remoteVideoRef.current.srcObject;
-                    clearInterval(interval);
-                  }
-                }, 200);
-                setTimeout(() => clearInterval(interval), 10000);
-              }
-            }}
-            autoPlay
-          />
-        )}
+        {/* Hidden media elements for audio calls */}
+        {!isVideo && <video ref={localVideoRef} autoPlay playsInline muted className="hidden" />}
+        {!isVideo && <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />}
+        {!isVideo && <audio ref={audioRef} autoPlay />}
 
-        <div className={`flex flex-col items-center px-6 pb-6 ${isVideo ? "pt-4" : "pt-10"}`}>
+        <div className={cn("flex flex-col items-center px-6 pb-6", isVideo ? "pt-4" : "pt-10")}>
           {!isVideo && (
-            <div className="mb-4">
-              <Avatar className="w-24 h-24 ring-2 ring-primary/30">
-                <AvatarImage src={call.caller_avatar || ""} />
-                <AvatarFallback className="bg-muted font-display font-bold text-2xl">
-                  {call.caller_username?.[0]?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <motion.div
+              animate={status === "connected" ? { scale: [1, 1.04, 1] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="mb-4 relative"
+            >
+              <div className={cn(
+                "rounded-full p-1",
+                status === "connected"
+                  ? "ring-2 ring-primary/40 shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                  : "ring-2 ring-border/30"
+              )}>
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={call.caller_avatar || ""} />
+                  <AvatarFallback className="bg-muted font-display font-bold text-2xl">
+                    {call.caller_username?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </motion.div>
           )}
 
           <h2 className="text-lg font-semibold text-foreground">{call.caller_username || "Unknown"}</h2>
           <p className="text-sm text-muted-foreground mt-1">
             {status === "connected" ? (
               <span className="text-aura-mint font-medium">{formatDuration(duration)}</span>
+            ) : status === "ended" || status === "missed" || status === "rejected" ? (
+              <span className="text-muted-foreground">
+                {status === "rejected" ? "Call declined" : status === "missed" ? "No answer" : "Call ended"}
+              </span>
             ) : (
               <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 0.8, repeat: Infinity }}>
                 Connecting…
@@ -215,21 +265,25 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
             )}
           </p>
 
+          {/* Controls */}
           <div className="flex items-center gap-4 mt-8">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={toggleMic}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                micMuted ? "bg-destructive/20 border border-destructive/40 text-destructive" : "bg-secondary/60 border border-border/30 text-foreground"
-              }`}
+              className={cn(
+                "w-14 h-14 rounded-full flex items-center justify-center transition-all",
+                micMuted
+                  ? "bg-destructive/20 border border-destructive/40 text-destructive"
+                  : "bg-secondary/60 border border-border/30 text-foreground hover:bg-secondary"
+              )}
             >
-              {micMuted ? <Phone className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
+              {micMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </motion.button>
 
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleHangUp}
-              className="w-16 h-16 rounded-full bg-destructive flex items-center justify-center shadow-[0_0_20px_hsl(var(--destructive)/0.4)]"
+              className="w-16 h-16 rounded-full bg-destructive flex items-center justify-center shadow-[0_0_20px_hsl(var(--destructive)/0.4)] hover:bg-destructive/90 transition-colors"
             >
               <PhoneOff className="w-6 h-6 text-white" />
             </motion.button>
@@ -238,11 +292,14 @@ export function IncomingCallModal({ call, onDismiss }: Props) {
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleVideo}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                  videoOff ? "bg-destructive/20 border border-destructive/40 text-destructive" : "bg-secondary/60 border border-border/30 text-foreground"
-                }`}
+                className={cn(
+                  "w-14 h-14 rounded-full flex items-center justify-center transition-all",
+                  videoOff
+                    ? "bg-destructive/20 border border-destructive/40 text-destructive"
+                    : "bg-secondary/60 border border-border/30 text-foreground hover:bg-secondary"
+                )}
               >
-                <Video className="w-5 h-5" />
+                {videoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
               </motion.button>
             ) : (
               <div className="w-14 h-14" />
