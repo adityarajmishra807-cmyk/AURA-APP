@@ -17,7 +17,7 @@ import { EmojiPicker } from "./EmojiPicker";
 
 export function ChatView() {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { messages, loading, sendMessage, toggleReaction } = useChatMessages(conversationId || null);
+  const { messages, loading, sendMessage, toggleReaction, otherTyping, broadcastTyping } = useChatMessages(conversationId || null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [input, setInput] = useState("");
