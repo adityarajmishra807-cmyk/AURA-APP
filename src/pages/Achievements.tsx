@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AchievementGridSkeleton } from "@/components/skeletons/Skeletons";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,8 +112,13 @@ export default function Achievements() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="max-w-3xl mx-auto flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="glass-card rounded-2xl p-5 md:p-8 text-center animate-pulse">
+            <div className="w-16 h-16 rounded-2xl bg-muted/60 mx-auto mb-4" />
+            <div className="h-6 w-40 bg-muted/60 rounded mx-auto mb-2" />
+            <div className="h-4 w-56 bg-muted/40 rounded mx-auto" />
+          </div>
+          <AchievementGridSkeleton />
         </div>
       </DashboardLayout>
     );

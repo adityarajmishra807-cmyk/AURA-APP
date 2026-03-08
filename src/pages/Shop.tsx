@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ShopGridSkeleton } from "@/components/skeletons/Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -124,8 +125,12 @@ export default function Shop() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="glass-card rounded-2xl p-5 md:p-8 animate-pulse">
+            <div className="h-8 w-48 bg-muted/60 rounded-lg mb-2" />
+            <div className="h-4 w-64 bg-muted/40 rounded" />
+          </div>
+          <ShopGridSkeleton />
         </div>
       </DashboardLayout>
     );

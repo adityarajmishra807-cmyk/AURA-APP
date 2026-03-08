@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { LeaderboardSkeleton } from "@/components/skeletons/Skeletons";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -268,7 +269,7 @@ export default function Leaderboard() {
         {/* Leaderboard list */}
         <div className="glass-card rounded-2xl overflow-hidden">
           {loading ? (
-            <div className="p-6 md:p-8 text-center text-muted-foreground animate-pulse text-sm">Loading rankings...</div>
+            <LeaderboardSkeleton />
           ) : entries.length === 0 ? (
             <div className="p-6 md:p-8 text-center text-muted-foreground text-sm">No entries yet</div>
           ) : (
