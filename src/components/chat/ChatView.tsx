@@ -304,6 +304,14 @@ export function ChatView() {
             </div>
           ))
         )}
+        <AnimatePresence>
+          {otherTyping && (
+            <TypingIndicator
+              username={otherUser?.username}
+              avatarUrl={otherUser?.avatar_url}
+            />
+          )}
+        </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
 
