@@ -128,7 +128,7 @@ export default function Settings() {
     visible: (i: number) => ({
       opacity: 1,
       y: 0,
-      transition: { delay: 0.05 * i, type: "spring", stiffness: 200, damping: 20 },
+      transition: { delay: 0.05 * i, type: "spring" as const, stiffness: 200, damping: 20 },
     }),
   };
 
