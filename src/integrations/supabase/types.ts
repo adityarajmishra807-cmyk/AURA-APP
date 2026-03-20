@@ -504,6 +504,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          academic_year: string | null
           aurix_balance: number
           aurix_daily_earnings: number
           aurix_daily_losses: number
@@ -511,6 +512,7 @@ export type Database = {
           aurix_lifetime_lost: number
           avatar_url: string | null
           bio: string | null
+          branch: string | null
           college_changed_at: string | null
           college_id: string | null
           created_at: string
@@ -518,16 +520,21 @@ export type Database = {
           equipped_frame: string | null
           equipped_name_color: string | null
           equipped_theme: string | null
+          gender: string | null
           highest_streak: number
           id: string
+          interests: string[] | null
           last_login_date: string | null
+          pronouns: string | null
           referral_code: string | null
           streak_count: number
           updated_at: string
           user_id: string
           username: string
+          vibe_tags: string[] | null
         }
         Insert: {
+          academic_year?: string | null
           aurix_balance?: number
           aurix_daily_earnings?: number
           aurix_daily_losses?: number
@@ -535,6 +542,7 @@ export type Database = {
           aurix_lifetime_lost?: number
           avatar_url?: string | null
           bio?: string | null
+          branch?: string | null
           college_changed_at?: string | null
           college_id?: string | null
           created_at?: string
@@ -542,16 +550,21 @@ export type Database = {
           equipped_frame?: string | null
           equipped_name_color?: string | null
           equipped_theme?: string | null
+          gender?: string | null
           highest_streak?: number
           id?: string
+          interests?: string[] | null
           last_login_date?: string | null
+          pronouns?: string | null
           referral_code?: string | null
           streak_count?: number
           updated_at?: string
           user_id: string
           username: string
+          vibe_tags?: string[] | null
         }
         Update: {
+          academic_year?: string | null
           aurix_balance?: number
           aurix_daily_earnings?: number
           aurix_daily_losses?: number
@@ -559,6 +572,7 @@ export type Database = {
           aurix_lifetime_lost?: number
           avatar_url?: string | null
           bio?: string | null
+          branch?: string | null
           college_changed_at?: string | null
           college_id?: string | null
           created_at?: string
@@ -566,14 +580,18 @@ export type Database = {
           equipped_frame?: string | null
           equipped_name_color?: string | null
           equipped_theme?: string | null
+          gender?: string | null
           highest_streak?: number
           id?: string
+          interests?: string[] | null
           last_login_date?: string | null
+          pronouns?: string | null
           referral_code?: string | null
           streak_count?: number
           updated_at?: string
           user_id?: string
           username?: string
+          vibe_tags?: string[] | null
         }
         Relationships: [
           {
