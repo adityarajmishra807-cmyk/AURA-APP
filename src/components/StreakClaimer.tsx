@@ -13,15 +13,26 @@ export function StreakClaimer() {
 
   useEffect(() => {
     if (!user) return;
-    // Check if streak already claimed today
+
+    // Only attempt once per 24 hours per device
+    const key = `streak_claimed_${user.id}`;
+    const lastClaimed = localStorage.getItem(key);
+    if (lastClaimed) {
+      const elapsed = Date.now() - Number(lastClaimed);
+      if (elapsed < 24 * 60 * 60 * 1000) return; // skip if <24h
+    }
+
     supabase.rpc("claim_daily_streak").then(({ data }) => {
       const res = data as any;
       if (res?.success) {
         setResult({ streak: res.streak, bonus: res.bonus });
         setShow(true);
         refreshProfile();
+        localStorage.setItem(key, String(Date.now()));
+      } else if (res?.already_claimed) {
+        // Mark so we don't retry on next navigation
+        localStorage.setItem(key, String(Date.now()));
       }
-      // If already_claimed, don't show
     });
   }, [user]);
 
