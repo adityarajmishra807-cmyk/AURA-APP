@@ -19,6 +19,12 @@ interface Profile {
   highest_streak: number;
   referral_code: string;
   created_at: string;
+  gender: string | null;
+  pronouns: string | null;
+  academic_year: string | null;
+  branch: string | null;
+  vibe_tags: string[];
+  interests: string[];
 }
 
 interface AuthContextType {
