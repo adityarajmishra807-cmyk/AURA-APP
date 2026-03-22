@@ -8,7 +8,12 @@ import { Send, X, CornerDownLeft, ChevronDown, Smile, Mic, Square } from "lucide
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { buildVoiceMessageContent, getSupportedVoiceNoteMimeType } from "@/lib/voiceNotes";
+import {
+  buildVoiceMessageContent,
+  getSupportedVoiceNoteMimeType,
+  getVoiceNoteExtension,
+  normalizeVoiceNoteMimeType,
+} from "@/lib/voiceNotes";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ChatBubble } from "./ChatBubble";
 import { ChatHeader } from "./ChatHeader";
