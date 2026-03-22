@@ -30,6 +30,7 @@ const Index = () => {
   return (
     <DashboardLayout>
       <StreakClaimer />
+      <FeedbackBot />
       <div className="relative max-w-3xl mx-auto">
         <ParallaxBackground />
         <FloatingParticles />
