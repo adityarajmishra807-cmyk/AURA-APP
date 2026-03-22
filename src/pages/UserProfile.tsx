@@ -140,6 +140,31 @@ export default function UserProfile() {
     }
   }, [profileData, fetchPosts, fetchRatings, fetchFriendship]);
 
+  useEffect(() => {
+    if (!profileData?.user_id) return;
+
+    const channel = supabase
+      .channel(`user-profile-${profileData.user_id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `user_id=eq.${profileData.user_id}`,
+        },
+        () => {
+          fetchProfile();
+          fetchPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profileData?.user_id, fetchProfile, fetchPosts]);
+
   const isOwnProfile = user?.id === profileData?.user_id;
   const { cosmetics } = useCosmetics(profileData?.user_id);
   const joinDate = profileData ? new Date(profileData.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "";
