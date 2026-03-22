@@ -8,7 +8,12 @@ import { Send, X, CornerDownLeft, ChevronDown, Smile, Mic, Square } from "lucide
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { buildVoiceMessageContent, getSupportedVoiceNoteMimeType } from "@/lib/voiceNotes";
+import {
+  buildVoiceMessageContent,
+  getSupportedVoiceNoteMimeType,
+  getVoiceNoteExtension,
+  normalizeVoiceNoteMimeType,
+} from "@/lib/voiceNotes";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ChatBubble } from "./ChatBubble";
 import { ChatHeader } from "./ChatHeader";
@@ -103,7 +108,7 @@ export function ChatView() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const { mimeType, extension } = getSupportedVoiceNoteMimeType();
+      const { mimeType } = getSupportedVoiceNoteMimeType();
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -117,20 +122,21 @@ export function ChatView() {
         clearInterval(recordingTimerRef.current);
         setRecordingDuration(0);
 
-        const recorderMimeType = mediaRecorder.mimeType || mimeType;
-        const blob = new Blob(audioChunksRef.current, { type: recorderMimeType });
+        const chunkMimeType = audioChunksRef.current.find((chunk) => chunk.type)?.type;
+        const normalizedMimeType = normalizeVoiceNoteMimeType(chunkMimeType || mediaRecorder.mimeType || mimeType);
+        const blob = new Blob(audioChunksRef.current, { type: normalizedMimeType });
         if (blob.size < 1000) { toast.error("Recording too short"); return; }
 
         setSending(true);
-        const fileName = `${user!.id}/${Date.now()}.${extension}`;
+        const fileName = `${user!.id}/${Date.now()}.${getVoiceNoteExtension(normalizedMimeType)}`;
         const { error: uploadErr } = await supabase.storage
           .from("post-images")
-          .upload(fileName, blob, { contentType: recorderMimeType });
+          .upload(fileName, blob, { contentType: normalizedMimeType });
 
         if (uploadErr) { toast.error("Failed to upload voice"); setSending(false); return; }
 
         const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
-        await sendMessage(buildVoiceMessageContent(urlData.publicUrl, recorderMimeType), undefined, true);
+        await sendMessage(buildVoiceMessageContent(urlData.publicUrl, normalizedMimeType), undefined, true);
         setSending(false);
         setIsScrolledUp(false);
       };
