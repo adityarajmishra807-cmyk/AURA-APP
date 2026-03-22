@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { FriendButton } from "./FriendButton";
 import { AnimatedRatingBar } from "./AnimatedRatingBar";
-import { Coins, Clock, Check, Trash2, MoreVertical, Share2, Flag } from "lucide-react";
+import { Coins, Clock, Check, Trash2, MoreVertical, Share2, Flag, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HashtagRenderer } from "./HashtagRenderer";
@@ -79,6 +80,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [saving, setSaving] = useState(false);
   const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
@@ -112,6 +116,23 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
     }
     setDeleting(false);
     setShowDeleteDialog(false);
+  };
+
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({ content: editContent.trim() })
+      .eq("id", post.id);
+    if (error) {
+      toast.error("Failed to update post");
+    } else {
+      toast.success("Post updated ✏️");
+      post.content = editContent.trim();
+      setIsEditing(false);
+      onRated(); // refresh feed
+    }
+    setSaving(false);
   };
 
   return (
@@ -212,6 +233,17 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             <DropdownMenuContent align="end">
               {isOwnPost && (
                 <DropdownMenuItem
+                  onClick={() => {
+                    setEditContent(post.content);
+                    setIsEditing(true);
+                  }}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit post
+                </DropdownMenuItem>
+              )}
+              {isOwnPost && (
+                <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => setShowDeleteDialog(true)}
                 >
@@ -244,10 +276,44 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           </div>
         )}
 
-        {/* Content with hashtag support */}
-        <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">
-          <HashtagRenderer content={post.content} onHashtagClick={onHashtagClick} />
-        </p>
+        {/* Content with hashtag support or edit mode */}
+        {isEditing ? (
+          <div className="mb-3 md:mb-4 space-y-2">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              maxLength={500}
+              className="bg-muted/30 border-border/30 focus:border-primary resize-none text-sm min-h-[60px]"
+              rows={3}
+              autoFocus
+            />
+            <div className="flex items-center gap-2 justify-end">
+              <span className="text-xs text-muted-foreground mr-auto">{editContent.length}/500</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+                disabled={saving}
+              >
+                <X className="w-3 h-3 mr-1" /> Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="gradient-primary text-primary-foreground glow-sm"
+              >
+                {saving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          post.content && (
+            <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">
+              <HashtagRenderer content={post.content} onHashtagClick={onHashtagClick} />
+            </p>
+          )
+        )}
 
         {/* Media Carousel for multi-media posts */}
         {post.media && post.media.length > 1 ? (
