@@ -207,7 +207,31 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
     }
   };
 
-  // Handle swipe down to close
+  const handleDelete = async () => {
+    if (!currentStory || !onDelete || deleting) return;
+    setDeleting(true);
+    setPaused(true);
+    const success = await onDelete(currentStory.id);
+    setDeleting(false);
+    if (success) {
+      toast.success("Story deleted");
+      // If this was the last story in the group, close or go to next group
+      if (currentGroup.stories.length <= 1) {
+        if (groupIndex < groups.length - 1) {
+          setGroupIndex((i) => i + 1);
+          setStoryIndex(0);
+        } else {
+          onClose();
+        }
+      } else {
+        goNext();
+      }
+    } else {
+      setPaused(false);
+    }
+  };
+
+
   const touchStartY = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
