@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseVoiceMessageContent } from "@/lib/voiceNotes";
 
 export interface AppNotification {
   id: string;
@@ -13,7 +14,23 @@ export interface AppNotification {
   created_at: string;
 }
 
-export function useNotifications() { // force rebuild
+
+function formatNotificationBody(type: string, body: string) {
+  if (type !== "new_message") return body;
+
+  if (body.startsWith("__call:ended:video:")) return `📹 Video call · ${body.split(":")[3]}`;
+  if (body.startsWith("__call:ended:audio:")) return `📞 Voice call · ${body.split(":")[3]}`;
+  if (body.startsWith("__call:missed:video:")) return "📹 Missed video call";
+  if (body.startsWith("__call:missed:audio:")) return "📞 Missed voice call";
+  if (body.startsWith("__call:rejected:video:")) return "📹 Declined video call";
+  if (body.startsWith("__call:rejected:audio:")) return "📞 Declined voice call";
+  if (body.startsWith("__call:")) return "📞 Call";
+  if (parseVoiceMessageContent(body)) return "🎙️ Voice message";
+
+  return body;
+}
+
+export function useNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -37,8 +54,12 @@ export function useNotifications() { // force rebuild
       }
 
       if (data) {
-        setNotifications(data as AppNotification[]);
-        setUnreadCount(data.filter((n: any) => !n.read).length);
+        const formatted = (data as AppNotification[]).map((notification) => ({
+          ...notification,
+          body: formatNotificationBody(notification.type, notification.body),
+        }));
+        setNotifications(formatted);
+        setUnreadCount(formatted.filter((n) => !n.read).length);
       }
     } catch (err) {
       console.error("Notification fetch error:", err);
@@ -127,7 +148,11 @@ export function useNotifications() { // force rebuild
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            const newNotif = payload.new as AppNotification;
+            const incomingNotification = payload.new as AppNotification;
+            const newNotif: AppNotification = {
+              ...incomingNotification,
+              body: formatNotificationBody(incomingNotification.type, incomingNotification.body),
+            };
             setNotifications((prev) => {
               if (prev.some((n) => n.id === newNotif.id)) return prev;
               return [newNotif, ...prev];
