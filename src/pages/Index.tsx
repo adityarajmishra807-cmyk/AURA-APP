@@ -5,6 +5,7 @@ import { PostFeed } from "@/components/feed/PostFeed";
 import { ParallaxBackground } from "@/components/feed/ParallaxBackground";
 import { FloatingParticles } from "@/components/feed/FloatingParticles";
 import { StreakClaimer } from "@/components/StreakClaimer";
+import { FeedbackBot } from "@/components/FeedbackBot";
 import { StoryBar } from "@/components/stories/StoryBar";
 import { UserSearch } from "@/components/feed/UserSearch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ const Index = () => {
   return (
     <DashboardLayout>
       <StreakClaimer />
+      <FeedbackBot />
       <div className="relative max-w-3xl mx-auto">
         <ParallaxBackground />
         <FloatingParticles />
