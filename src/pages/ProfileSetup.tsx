@@ -19,6 +19,7 @@ interface College {
 
 export default function ProfileSetup() {
   const { user, profile, loading, refreshProfile } = useAuth();
+  const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [collegeId, setCollegeId] = useState("");
   const [colleges, setColleges] = useState<College[]>([]);
