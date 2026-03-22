@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowLeft, TrendingUp, TrendingDown, Phone, Video,
-  MoreVertical, UserX, AlertTriangle, X, ShieldBan
+  MoreVertical, UserX, AlertTriangle, X, ShieldBan, Swords
 } from "lucide-react";
+import { ChallengeDialog } from "@/components/battles/ChallengeDialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
   const [callOpen, setCallOpen] = useState(false);
   const [callType, setCallType] = useState<"voice" | "video">("voice");
   const [isBlocked, setIsBlocked] = useState(false);
+  const [challengeOpen, setChallengeOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const tier = getAuraTier(otherUser?.aurix_balance || 0);
@@ -148,6 +150,15 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
           <div className="flex items-center gap-0.5 shrink-0">
             <motion.button
               whileTap={{ scale: 0.88 }}
+              onClick={() => { setChallengeOpen(true); setShowMenu(false); }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
+              title="Challenge to battle"
+            >
+              <Swords className="w-[18px] h-[18px]" />
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               onClick={() => handleCall("voice")}
               className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
               title="Voice call"
@@ -232,6 +243,12 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
                 className="w-full flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-secondary/40 transition-colors"
               >
                 <Video className="w-4 h-4" /> Video call
+              </button>
+              <button
+                onClick={() => { setChallengeOpen(true); setShowMenu(false); }}
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Swords className="w-4 h-4" /> ⚔️ Challenge to battle
               </button>
               <div className="h-px bg-border/20 mx-3" />
               {isBlocked ? (
@@ -370,6 +387,15 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
         onClose={() => setCallOpen(false)}
         callType={callType}
         otherUser={otherUser}
+      />
+
+      {/* Battle challenge dialog */}
+      <ChallengeDialog
+        open={challengeOpen}
+        onOpenChange={setChallengeOpen}
+        targetUserId={otherUser?.user_id}
+        targetUsername={otherUser?.username}
+        onCreated={() => setChallengeOpen(false)}
       />
     </>
   );
