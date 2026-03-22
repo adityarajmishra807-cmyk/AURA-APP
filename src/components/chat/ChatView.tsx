@@ -8,6 +8,7 @@ import { Send, X, CornerDownLeft, ChevronDown, Smile, Mic, Square } from "lucide
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { buildVoiceMessageContent, getSupportedVoiceNoteMimeType } from "@/lib/voiceNotes";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ChatBubble } from "./ChatBubble";
 import { ChatHeader } from "./ChatHeader";
@@ -102,7 +103,8 @@ export function ChatView() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const { mimeType, extension } = getSupportedVoiceNoteMimeType();
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -115,19 +117,20 @@ export function ChatView() {
         clearInterval(recordingTimerRef.current);
         setRecordingDuration(0);
 
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const recorderMimeType = mediaRecorder.mimeType || mimeType;
+        const blob = new Blob(audioChunksRef.current, { type: recorderMimeType });
         if (blob.size < 1000) { toast.error("Recording too short"); return; }
 
         setSending(true);
-        const fileName = `${user!.id}/${Date.now()}.webm`;
+        const fileName = `${user!.id}/${Date.now()}.${extension}`;
         const { error: uploadErr } = await supabase.storage
           .from("post-images")
-          .upload(fileName, blob, { contentType: "audio/webm" });
+          .upload(fileName, blob, { contentType: recorderMimeType });
 
         if (uploadErr) { toast.error("Failed to upload voice"); setSending(false); return; }
 
         const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
-        await sendMessage(`🎤 Voice message\n${urlData.publicUrl}`, undefined, true);
+        await sendMessage(buildVoiceMessageContent(urlData.publicUrl, recorderMimeType), undefined, true);
         setSending(false);
         setIsScrolledUp(false);
       };
