@@ -40,6 +40,8 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
   const [callOpen, setCallOpen] = useState(false);
   const [callType, setCallType] = useState<"voice" | "video">("voice");
   const [isBlocked, setIsBlocked] = useState(false);
+  const [challengeOpen, setChallengeOpen] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const tier = getAuraTier(otherUser?.aurix_balance || 0);
