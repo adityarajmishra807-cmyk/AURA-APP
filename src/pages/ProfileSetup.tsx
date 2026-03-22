@@ -75,6 +75,11 @@ export default function ProfileSetup() {
       toast.error("Please select your college");
       return;
     }
+    const bioCheck = validateContent(bio);
+    if (bioCheck) {
+      toast.error(bioCheck);
+      return;
+    }
     setSaving(true);
 
     const { error } = await supabase

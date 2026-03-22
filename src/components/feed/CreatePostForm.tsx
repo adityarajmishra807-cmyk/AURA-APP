@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ImagePlus, Send, X, Coins, Video, Mic } from "lucide-react";
 import { toast } from "sonner";
+import { validateContent } from "@/lib/profanityFilter";
 
 interface CreatePostFormProps {
   onPostCreated: () => void;

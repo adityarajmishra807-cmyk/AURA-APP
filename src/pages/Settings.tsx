@@ -91,6 +91,14 @@ export default function Settings() {
 
   const handleSave = async () => {
     if (!user) return;
+
+    // Profanity check on bio
+    const bioCheck = validateContent(bio);
+    if (bioCheck) {
+      toast.error(bioCheck);
+      return;
+    }
+
     setSaving(true);
 
     const updates: Record<string, any> = {

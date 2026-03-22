@@ -9,6 +9,7 @@ import { MessageCircle, Send, Trash2, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { validateContent } from "@/lib/profanityFilter";
 
 interface Comment {
   id: string;
