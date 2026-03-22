@@ -388,6 +388,15 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
         callType={callType}
         otherUser={otherUser}
       />
+
+      {/* Battle challenge dialog */}
+      <ChallengeDialog
+        open={challengeOpen}
+        onOpenChange={setChallengeOpen}
+        targetUserId={otherUser?.user_id}
+        targetUsername={otherUser?.username}
+        onCreated={() => setChallengeOpen(false)}
+      />
     </>
   );
 }
