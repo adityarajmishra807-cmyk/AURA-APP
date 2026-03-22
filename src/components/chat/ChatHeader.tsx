@@ -244,6 +244,12 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
               >
                 <Video className="w-4 h-4" /> Video call
               </button>
+              <button
+                onClick={() => { setChallengeOpen(true); setShowMenu(false); }}
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Swords className="w-4 h-4" /> ⚔️ Challenge to battle
+              </button>
               <div className="h-px bg-border/20 mx-3" />
               {isBlocked ? (
                 <button
