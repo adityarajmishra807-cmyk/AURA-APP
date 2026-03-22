@@ -118,6 +118,23 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
     setShowDeleteDialog(false);
   };
 
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({ content: editContent.trim() })
+      .eq("id", post.id);
+    if (error) {
+      toast.error("Failed to update post");
+    } else {
+      toast.success("Post updated ✏️");
+      post.content = editContent.trim();
+      setIsEditing(false);
+      onRated(); // refresh feed
+    }
+    setSaving(false);
+  };
+
   return (
     <motion.div
       ref={(node) => {
