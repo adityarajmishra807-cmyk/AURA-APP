@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessage } from "@/hooks/useChat";
+import { ReportDialog } from "@/components/reports/ReportDialog";
 
 const reactionTypes = [
   { key: "impact", label: "Impact", icon: Zap },
