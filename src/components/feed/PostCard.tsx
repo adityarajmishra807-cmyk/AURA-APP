@@ -203,14 +203,14 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               onStatusChange={onFriendChange}
             />
           )}
-          {isOwnPost && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isOwnPost && (
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => setShowDeleteDialog(true)}
@@ -218,9 +218,18 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete post
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+              )}
+              {!isOwnPost && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setShowReportDialog(true)}
+                >
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report post
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Trending rank badge */}
