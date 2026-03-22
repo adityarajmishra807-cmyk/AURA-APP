@@ -9,7 +9,7 @@ interface Props {
   isMine: boolean;
 }
 
-function setForwardedRef<T>(ref: React.ForwardedRef<T>, value: T) {
+function setForwardedRef<T>(ref: ForwardedRef<T>, value: T) {
   if (typeof ref === "function") {
     ref(value);
   } else if (ref) {
