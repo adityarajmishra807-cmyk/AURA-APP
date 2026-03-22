@@ -103,7 +103,7 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
     }
   };
 
-  const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleBarClick = (e: MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
     if (!audio || !duration) return;
     const rect = e.currentTarget.getBoundingClientRect();

@@ -108,7 +108,7 @@ export function ChatView() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const { mimeType, extension } = getSupportedVoiceNoteMimeType();
+      const { mimeType } = getSupportedVoiceNoteMimeType();
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
