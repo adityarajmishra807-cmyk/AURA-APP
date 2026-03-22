@@ -407,6 +407,15 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
 
       {/* Share dialog */}
       <SharePostDialog postId={post.id} open={showShareDialog} onOpenChange={setShowShareDialog} />
+
+      {/* Report dialog */}
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        contentType="post"
+        contentId={post.id}
+        reportedUserId={post.user_id}
+      />
     </motion.div>
   );
 }

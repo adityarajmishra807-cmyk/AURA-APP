@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame } from "lucide-react";
+import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessage } from "@/hooks/useChat";
 
