@@ -150,5 +150,15 @@ export function useStories() {
     return false;
   }, [user, fetchStories]);
 
-  return { storyGroups, loading, fetchStories, markViewed, reactToStory, uploadStory, viewedStoryIds };
+  const deleteStory = useCallback(async (storyId: string) => {
+    if (!user) return false;
+    const { error } = await supabase.from("stories").delete().eq("id", storyId).eq("user_id", user.id);
+    if (!error) {
+      await fetchStories();
+      return true;
+    }
+    return false;
+  }, [user, fetchStories]);
+
+  return { storyGroups, loading, fetchStories, markViewed, reactToStory, uploadStory, deleteStory, viewedStoryIds };
 }
