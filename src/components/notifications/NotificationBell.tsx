@@ -93,7 +93,7 @@ export function NotificationBell() {
             requestPushPermission();
           }
         }}
-        className="relative p-2 rounded-xl hover:bg-muted/60 transition-colors tap-scale"
+        className="relative p-3 md:p-2 rounded-xl hover:bg-muted/60 transition-colors tap-scale"
       >
         <Bell className="w-5 h-5 text-foreground" />
         <AnimatePresence>
