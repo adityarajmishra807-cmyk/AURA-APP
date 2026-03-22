@@ -192,36 +192,7 @@ export function ChatBubble({
               {isSharedPost && sharedPostId ? (
                 <SharedPostEmbed postId={sharedPostId} />
               ) : isVoice && audioUrl ? (
-                audioFailed ? (
-                  <a
-                    href={audioUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={cn(
-                      "flex items-center justify-between gap-3 min-w-[180px] rounded-xl px-3 py-2 text-sm",
-                      isMine
-                        ? "bg-primary-foreground/10 text-primary-foreground"
-                        : "bg-secondary/60 text-foreground"
-                    )}
-                  >
-                    <span className="truncate">🎤 Open voice note</span>
-                    <span className="text-xs opacity-70">Tap</span>
-                  </a>
-                ) : (
-                  <div className="flex items-center gap-2.5 min-w-[180px]">
-                    <span className="text-base">🎤</span>
-                    <audio
-                      src={audioUrl}
-                      controls
-                      preload="metadata"
-                      className="h-8 flex-1 [&::-webkit-media-controls-panel]:bg-transparent"
-                      style={{ maxWidth: 200 }}
-                      onError={() => setAudioFailed(true)}
-                    >
-                      {voiceNote?.mimeType ? <source src={audioUrl} type={voiceNote.mimeType} /> : null}
-                    </audio>
-                  </div>
-                )
+                <VoiceNotePlayer audioUrl={audioUrl} mimeType={voiceNote?.mimeType} isMine={isMine} />
               ) : (
                 <span className="whitespace-pre-wrap break-words">{message.content}</span>
               )}
