@@ -103,6 +103,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
       toast.error("Comment must be 300 characters or less");
       return;
     }
+    const profanityError = validateContent(newComment);
+    if (profanityError) {
+      toast.error(profanityError);
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.from("comments").insert({
       post_id: postId,

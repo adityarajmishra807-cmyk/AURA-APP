@@ -68,6 +68,13 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     }
     if (!user) return;
 
+    // Profanity check
+    const profanityError = validateContent(content);
+    if (profanityError) {
+      toast.error(profanityError);
+      return;
+    }
+
     setSubmitting(true);
     let primaryImageUrl: string | null = null;
 
