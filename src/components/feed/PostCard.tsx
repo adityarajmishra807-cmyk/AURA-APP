@@ -21,6 +21,7 @@ import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ProfilePictureModal } from "@/components/ui/ProfilePictureModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,6 +81,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showPfpModal, setShowPfpModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
@@ -183,20 +185,20 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
       <div className="relative z-[2]">
         {/* Header */}
         <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
-          <Link to={`/profile/${post.profiles.username}`}>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 500 }}
-            >
-              <Avatar className={cn("w-9 h-9 md:w-10 md:h-10 border border-border tap-scale", cosmetics.frame)}>
-                <AvatarImage src={post.profiles.avatar_url || ""} />
-                <AvatarFallback className="bg-muted font-display font-bold text-xs md:text-sm">
-                  {post.profiles.username?.[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </motion.div>
-          </Link>
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 500 }}
+            onClick={() => setShowPfpModal(true)}
+            className="cursor-pointer"
+          >
+            <Avatar className={cn("w-9 h-9 md:w-10 md:h-10 border border-border tap-scale", cosmetics.frame)}>
+              <AvatarImage src={post.profiles.avatar_url || ""} />
+              <AvatarFallback className="bg-muted font-display font-bold text-xs md:text-sm">
+                {post.profiles.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </motion.div>
           <div className="flex-1 min-w-0 mr-1">
             <div className="flex items-center gap-1.5 md:gap-2">
               <Link to={`/profile/${post.profiles.username}`} className={cn("text-sm font-semibold tap-scale", cosmetics.nameColor || "text-foreground")}>@{post.profiles.username}</Link>
@@ -485,6 +487,13 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
         contentType="post"
         contentId={post.id}
         reportedUserId={post.user_id}
+      />
+
+      <ProfilePictureModal
+        open={showPfpModal}
+        onOpenChange={setShowPfpModal}
+        imageUrl={post.profiles.avatar_url}
+        username={post.profiles.username}
       />
 
     </motion.div>
