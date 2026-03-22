@@ -28,6 +28,7 @@ interface StoryViewerProps {
   onClose: () => void;
   onViewed: (storyId: string) => void;
   onReact: (storyId: string, reactionType: string) => void;
+  onDelete?: (storyId: string) => Promise<boolean>;
   viewedStoryIds: Set<string>;
 }
 
