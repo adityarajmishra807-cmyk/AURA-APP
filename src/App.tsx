@@ -22,6 +22,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Install from "./pages/Install";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
+import Battles from "./pages/Battles";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/install" element={<ProtectedRoute><Install /></ProtectedRoute>} />
             <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
             <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
+            <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

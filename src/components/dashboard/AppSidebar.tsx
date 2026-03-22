@@ -17,11 +17,13 @@ import {
   Gift,
   MessageCircle,
   Download,
+  Swords,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
   { label: "Chat", icon: MessageCircle, href: "/chat" },
+  { label: "Battles", icon: Swords, href: "/battles" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "Transfer", icon: Send, href: "/transfer" },
   { label: "Referrals", icon: Gift, href: "/referrals" },

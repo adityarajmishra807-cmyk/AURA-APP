@@ -104,6 +104,140 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_scores: {
+        Row: {
+          avg_rating: number
+          battle_id: string
+          engagement_score: number
+          final_score: number
+          id: string
+          posts_count: number
+          unique_raters: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_rating?: number
+          battle_id: string
+          engagement_score?: number
+          final_score?: number
+          id?: string
+          posts_count?: number
+          unique_raters?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_rating?: number
+          battle_id?: string
+          engagement_score?: number
+          final_score?: number
+          id?: string
+          posts_count?: number
+          unique_raters?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_scores_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_stats: {
+        Row: {
+          best_streak: number
+          draws: number
+          id: string
+          losses: number
+          total_battles: number
+          total_earned: number
+          total_lost: number
+          updated_at: string
+          user_id: string
+          win_streak: number
+          wins: number
+        }
+        Insert: {
+          best_streak?: number
+          draws?: number
+          id?: string
+          losses?: number
+          total_battles?: number
+          total_earned?: number
+          total_lost?: number
+          updated_at?: string
+          user_id: string
+          win_streak?: number
+          wins?: number
+        }
+        Update: {
+          best_streak?: number
+          draws?: number
+          id?: string
+          losses?: number
+          total_battles?: number
+          total_earned?: number
+          total_lost?: number
+          updated_at?: string
+          user_id?: string
+          win_streak?: number
+          wins?: number
+        }
+        Relationships: []
+      }
+      battles: {
+        Row: {
+          challenger_id: string
+          created_at: string
+          end_time: string | null
+          id: string
+          mode: Database["public"]["Enums"]["battle_mode"]
+          opponent_id: string
+          platform_fee: number
+          stake: number
+          start_time: string | null
+          status: Database["public"]["Enums"]["battle_status"]
+          target_score: number | null
+          theme: string | null
+          winner_id: string | null
+        }
+        Insert: {
+          challenger_id: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["battle_mode"]
+          opponent_id: string
+          platform_fee?: number
+          stake: number
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["battle_status"]
+          target_score?: number | null
+          theme?: string | null
+          winner_id?: string | null
+        }
+        Update: {
+          challenger_id?: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["battle_mode"]
+          opponent_id?: string
+          platform_fee?: number
+          stake?: number
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["battle_status"]
+          target_score?: number | null
+          theme?: string | null
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -1039,6 +1173,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_battle: { Args: { p_battle_id: string }; Returns: Json }
       check_achievements: { Args: never; Returns: Json }
       check_referral_milestones: { Args: never; Returns: Json }
       claim_daily_streak: { Args: never; Returns: Json }
@@ -1047,6 +1182,17 @@ export type Database = {
         Args: { p_referral_id: string; p_stage: number }
         Returns: Json
       }
+      create_battle: {
+        Args: {
+          p_mode?: string
+          p_opponent_id: string
+          p_stake: number
+          p_target_score?: number
+          p_theme?: string
+        }
+        Returns: Json
+      }
+      decline_battle: { Args: { p_battle_id: string }; Returns: Json }
       equip_shop_item: { Args: { p_item_id: string }; Returns: Json }
       get_college_leaderboard: {
         Args: { p_college_id: string; p_limit?: number }
@@ -1096,6 +1242,7 @@ export type Database = {
       purchase_shop_item: { Args: { p_item_id: string }; Returns: Json }
       refresh_leaderboard_cache: { Args: never; Returns: undefined }
       register_referral: { Args: { p_referral_code: string }; Returns: Json }
+      resolve_battle: { Args: { p_battle_id: string }; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
         Returns: Json
@@ -1111,7 +1258,13 @@ export type Database = {
       unequip_shop_item: { Args: { p_category: string }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      battle_mode: "classic" | "blitz" | "target" | "theme"
+      battle_status:
+        | "pending"
+        | "active"
+        | "completed"
+        | "cancelled"
+        | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1238,6 +1391,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      battle_mode: ["classic", "blitz", "target", "theme"],
+      battle_status: ["pending", "active", "completed", "cancelled", "expired"],
+    },
   },
 } as const
