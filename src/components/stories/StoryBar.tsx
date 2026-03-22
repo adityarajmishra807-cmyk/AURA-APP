@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function StoryBar() {
   const { user, profile } = useAuth();
-  const { storyGroups, loading, markViewed, reactToStory, uploadStory, viewedStoryIds, fetchStories } = useStories();
+  const { storyGroups, loading, markViewed, reactToStory, uploadStory, deleteStory, viewedStoryIds, fetchStories } = useStories();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
@@ -151,6 +151,7 @@ export function StoryBar() {
             onClose={handleCloseViewer}
             onViewed={markViewed}
             onReact={reactToStory}
+            onDelete={deleteStory}
             viewedStoryIds={viewedStoryIds}
           />
         )}

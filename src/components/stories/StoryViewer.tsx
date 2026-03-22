@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star, ThumbsUp, ThumbsDown } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star, Trash2 } from "lucide-react";
 import { StoryGroup } from "@/hooks/useStories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -28,10 +28,11 @@ interface StoryViewerProps {
   onClose: () => void;
   onViewed: (storyId: string) => void;
   onReact: (storyId: string, reactionType: string) => void;
+  onDelete?: (storyId: string) => Promise<boolean>;
   viewedStoryIds: Set<string>;
 }
 
-export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onReact, viewedStoryIds }: StoryViewerProps) {
+export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onReact, onDelete, viewedStoryIds }: StoryViewerProps) {
   const { user } = useAuth();
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
   const [storyIndex, setStoryIndex] = useState(0);
@@ -43,6 +44,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
   const [storyRating, setStoryRating] = useState<number | null>(null);
   const [hasRated, setHasRated] = useState(false);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const timerRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
@@ -205,7 +207,31 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
     }
   };
 
-  // Handle swipe down to close
+  const handleDelete = async () => {
+    if (!currentStory || !onDelete || deleting) return;
+    setDeleting(true);
+    setPaused(true);
+    const success = await onDelete(currentStory.id);
+    setDeleting(false);
+    if (success) {
+      toast.success("Story deleted");
+      // If this was the last story in the group, close or go to next group
+      if (currentGroup.stories.length <= 1) {
+        if (groupIndex < groups.length - 1) {
+          setGroupIndex((i) => i + 1);
+          setStoryIndex(0);
+        } else {
+          onClose();
+        }
+      } else {
+        goNext();
+      }
+    } else {
+      setPaused(false);
+    }
+  };
+
+
   const touchStartY = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
@@ -272,6 +298,15 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
               <Eye className="w-3.5 h-3.5" />
               <span>{viewCount}</span>
             </div>
+            {isOwnStory && onDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                disabled={deleting}
+                className="w-8 h-8 flex items-center justify-center text-red-400/70 hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="w-4.5 h-4.5" />
+              </button>
+            )}
             <button
               onClick={(e) => { e.stopPropagation(); onClose(); }}
               className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-colors"
