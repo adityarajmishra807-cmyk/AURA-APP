@@ -298,6 +298,15 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
               <Eye className="w-3.5 h-3.5" />
               <span>{viewCount}</span>
             </div>
+            {isOwnStory && onDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                disabled={deleting}
+                className="w-8 h-8 flex items-center justify-center text-red-400/70 hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="w-4.5 h-4.5" />
+              </button>
+            )}
             <button
               onClick={(e) => { e.stopPropagation(); onClose(); }}
               className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-colors"
