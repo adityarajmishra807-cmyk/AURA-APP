@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowLeft, TrendingUp, TrendingDown, Phone, Video,
-  MoreVertical, UserX, AlertTriangle, X, ShieldBan
+  MoreVertical, UserX, AlertTriangle, X, ShieldBan, Swords
 } from "lucide-react";
+import { ChallengeDialog } from "@/components/battles/ChallengeDialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
