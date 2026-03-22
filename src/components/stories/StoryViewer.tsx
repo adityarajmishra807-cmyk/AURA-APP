@@ -44,6 +44,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onRe
   const [storyRating, setStoryRating] = useState<number | null>(null);
   const [hasRated, setHasRated] = useState(false);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const timerRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
