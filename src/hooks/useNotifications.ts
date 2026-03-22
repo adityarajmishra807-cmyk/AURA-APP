@@ -53,8 +53,12 @@ function formatNotificationBody(type: string, body: string) {
       }
 
       if (data) {
-        setNotifications(data as AppNotification[]);
-        setUnreadCount(data.filter((n: any) => !n.read).length);
+        const formatted = (data as AppNotification[]).map((notification) => ({
+          ...notification,
+          body: formatNotificationBody(notification.type, notification.body),
+        }));
+        setNotifications(formatted);
+        setUnreadCount(formatted.filter((n) => !n.read).length);
       }
     } catch (err) {
       console.error("Notification fetch error:", err);
