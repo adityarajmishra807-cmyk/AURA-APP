@@ -12,6 +12,7 @@ import { Coins, Flame, TrendingUp, Calendar, Sparkles, Award } from "lucide-reac
 import { BadgeDisplay } from "@/components/badges/BadgeDisplay";
 import { useCosmetics } from "@/hooks/useCosmetics";
 import { cn } from "@/lib/utils";
+import { ProfilePictureModal } from "@/components/ui/ProfilePictureModal";
 
 interface UserProfileData {
   user_id: string;
@@ -50,6 +51,7 @@ export default function UserProfile() {
   const [friendStatus, setFriendStatus] = useState<"none" | "pending_sent" | "pending_received" | "accepted">("none");
   const [friendshipId, setFriendshipId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
+  const [showPfpModal, setShowPfpModal] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!username) return;
@@ -204,12 +206,19 @@ export default function UserProfile() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-start gap-4 md:gap-6">
-            <Avatar className={cn("w-16 h-16 md:w-20 md:h-20 border-2 border-border shrink-0", cosmetics.frame)}>
-              <AvatarImage src={profileData.avatar_url || ""} />
-              <AvatarFallback className="bg-muted text-xl md:text-2xl font-display font-bold">
-                {profileData.username[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <button
+              type="button"
+              onClick={() => setShowPfpModal(true)}
+              className="shrink-0 cursor-pointer"
+              aria-label={`Open @${profileData.username}'s profile photo`}
+            >
+              <Avatar className={cn("w-16 h-16 md:w-20 md:h-20 border-2 border-border", cosmetics.frame)}>
+                <AvatarImage src={profileData.avatar_url || ""} />
+                <AvatarFallback className="bg-muted text-xl md:text-2xl font-display font-bold">
+                  {profileData.username[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
@@ -320,6 +329,13 @@ export default function UserProfile() {
             </div>
           )}
         </div>
+
+        <ProfilePictureModal
+          open={showPfpModal}
+          onOpenChange={setShowPfpModal}
+          imageUrl={profileData.avatar_url}
+          username={profileData.username}
+        />
       </div>
     </DashboardLayout>
   );
