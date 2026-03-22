@@ -300,10 +300,29 @@ export function ChatBubble({
                 >
                   <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
+                {!isMine && (
+                  <button
+                    onClick={() => { setShowReport(true); setShowActions(false); }}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-destructive/10 transition-all"
+                  >
+                    <Flag className="w-3.5 h-3.5 text-destructive/70" />
+                  </button>
+                )}
               </motion.div>
             </>
           )}
         </AnimatePresence>
+
+        {/* Report dialog */}
+        {!isMine && (
+          <ReportDialog
+            open={showReport}
+            onOpenChange={setShowReport}
+            contentType="message"
+            contentId={message.id}
+            reportedUserId={message.sender_id}
+          />
+        )}
       </div>
     </motion.div>
   );
