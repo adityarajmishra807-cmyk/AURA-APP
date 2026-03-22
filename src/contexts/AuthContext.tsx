@@ -46,12 +46,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retries = 3) => {
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
       .single();
+    
+    if (!data && retries > 0) {
+      // Profile may not exist yet (e.g. Google OAuth trigger delay)
+      await new Promise(r => setTimeout(r, 1000));
+      return fetchProfile(userId, retries - 1);
+    }
+    
     setProfile(data as Profile | null);
   };
 
