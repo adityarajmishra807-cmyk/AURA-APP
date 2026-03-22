@@ -74,6 +74,54 @@ export type Database = {
         }
         Relationships: []
       }
+      app_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          q1_ease_of_use: number | null
+          q10_change_one_thing: string | null
+          q2_design: number | null
+          q3_performance: number | null
+          q4_usefulness: number | null
+          q5_recommend: number | null
+          q6_like_most: string | null
+          q7_problems: string | null
+          q8_missing_feature: string | null
+          q9_improve_experience: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          q1_ease_of_use?: number | null
+          q10_change_one_thing?: string | null
+          q2_design?: number | null
+          q3_performance?: number | null
+          q4_usefulness?: number | null
+          q5_recommend?: number | null
+          q6_like_most?: string | null
+          q7_problems?: string | null
+          q8_missing_feature?: string | null
+          q9_improve_experience?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          q1_ease_of_use?: number | null
+          q10_change_one_thing?: string | null
+          q2_design?: number | null
+          q3_performance?: number | null
+          q4_usefulness?: number | null
+          q5_recommend?: number | null
+          q6_like_most?: string | null
+          q7_problems?: string | null
+          q8_missing_feature?: string | null
+          q9_improve_experience?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       aurix_transactions: {
         Row: {
           amount: number
