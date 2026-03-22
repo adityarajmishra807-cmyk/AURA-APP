@@ -276,10 +276,44 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           </div>
         )}
 
-        {/* Content with hashtag support */}
-        <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">
-          <HashtagRenderer content={post.content} onHashtagClick={onHashtagClick} />
-        </p>
+        {/* Content with hashtag support or edit mode */}
+        {isEditing ? (
+          <div className="mb-3 md:mb-4 space-y-2">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              maxLength={500}
+              className="bg-muted/30 border-border/30 focus:border-primary resize-none text-sm min-h-[60px]"
+              rows={3}
+              autoFocus
+            />
+            <div className="flex items-center gap-2 justify-end">
+              <span className="text-xs text-muted-foreground mr-auto">{editContent.length}/500</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+                disabled={saving}
+              >
+                <X className="w-3 h-3 mr-1" /> Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="gradient-primary text-primary-foreground glow-sm"
+              >
+                {saving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          post.content && (
+            <p className="text-sm md:text-base text-foreground leading-relaxed mb-3 md:mb-4">
+              <HashtagRenderer content={post.content} onHashtagClick={onHashtagClick} />
+            </p>
+          )
+        )}
 
         {/* Media Carousel for multi-media posts */}
         {post.media && post.media.length > 1 ? (
