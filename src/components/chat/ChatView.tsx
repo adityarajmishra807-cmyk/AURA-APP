@@ -39,6 +39,7 @@ export function ChatView() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout>();
+  const recordingStartedAtRef = useRef<number | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
 
   // Fetch other user profile
@@ -120,12 +121,23 @@ export function ChatView() {
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
         clearInterval(recordingTimerRef.current);
+        const elapsedMs = recordingStartedAtRef.current ? Date.now() - recordingStartedAtRef.current : recordingDuration * 1000;
+        recordingStartedAtRef.current = null;
         setRecordingDuration(0);
 
         const chunkMimeType = audioChunksRef.current.find((chunk) => chunk.type)?.type;
         const normalizedMimeType = normalizeVoiceNoteMimeType(chunkMimeType || mediaRecorder.mimeType || mimeType);
         const blob = new Blob(audioChunksRef.current, { type: normalizedMimeType });
-        if (blob.size < 1000) { toast.error("Recording too short"); return; }
+
+        if (blob.size === 0) {
+          toast.error("Recording failed, try again");
+          return;
+        }
+
+        if (elapsedMs < 600) {
+          toast.error("Recording too short");
+          return;
+        }
 
         setSending(true);
         const fileName = `${user!.id}/${Date.now()}.${getVoiceNoteExtension(normalizedMimeType)}`;
@@ -144,6 +156,7 @@ export function ChatView() {
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingDuration(0);
+      recordingStartedAtRef.current = Date.now();
       recordingTimerRef.current = setInterval(() => setRecordingDuration((d) => d + 1), 1000);
     } catch {
       toast.error("Microphone access denied");
@@ -152,6 +165,9 @@ export function ChatView() {
 
   const stopRecording = () => {
     if (mediaRecorderRef.current?.state === "recording") {
+      if (typeof mediaRecorderRef.current.requestData === "function") {
+        mediaRecorderRef.current.requestData();
+      }
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
