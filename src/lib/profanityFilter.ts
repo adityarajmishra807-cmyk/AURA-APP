@@ -34,32 +34,16 @@ const patterns = BAD_WORDS.map((word) => {
  * Check if text contains profanity.
  * Returns the first matched bad word or null if clean.
  */
-export function detectProfanity(text: string): string | null {
-  if (!text) return null;
-  const normalized = text.toLowerCase().trim();
-
-  for (let i = 0; i < BAD_WORDS.length; i++) {
-    if (patterns[i].test(normalized)) {
-      return BAD_WORDS[i];
-    }
-  }
+export function detectProfanity(_text: string): string | null {
+  // Profanity filter disabled
   return null;
 }
 
-/**
- * Returns true if text is clean (no profanity).
- */
-export function isClean(text: string): boolean {
-  return detectProfanity(text) === null;
+export function isClean(_text: string): boolean {
+  return true;
 }
 
-/**
- * Validates text and returns an error message if profanity is found.
- */
-export function validateContent(text: string): string | null {
-  const match = detectProfanity(text);
-  if (match) {
-    return "Your message contains inappropriate language. Please remove it and try again.";
-  }
+export function validateContent(_text: string): string | null {
+  // Profanity filter disabled
   return null;
 }
