@@ -233,6 +233,17 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
             <DropdownMenuContent align="end">
               {isOwnPost && (
                 <DropdownMenuItem
+                  onClick={() => {
+                    setEditContent(post.content);
+                    setIsEditing(true);
+                  }}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit post
+                </DropdownMenuItem>
+              )}
+              {isOwnPost && (
+                <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => setShowDeleteDialog(true)}
                 >
