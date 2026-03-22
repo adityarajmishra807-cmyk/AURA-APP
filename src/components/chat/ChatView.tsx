@@ -122,20 +122,21 @@ export function ChatView() {
         clearInterval(recordingTimerRef.current);
         setRecordingDuration(0);
 
-        const recorderMimeType = mediaRecorder.mimeType || mimeType;
-        const blob = new Blob(audioChunksRef.current, { type: recorderMimeType });
+        const chunkMimeType = audioChunksRef.current.find((chunk) => chunk.type)?.type;
+        const normalizedMimeType = normalizeVoiceNoteMimeType(chunkMimeType || mediaRecorder.mimeType || mimeType);
+        const blob = new Blob(audioChunksRef.current, { type: normalizedMimeType });
         if (blob.size < 1000) { toast.error("Recording too short"); return; }
 
         setSending(true);
-        const fileName = `${user!.id}/${Date.now()}.${extension}`;
+        const fileName = `${user!.id}/${Date.now()}.${getVoiceNoteExtension(normalizedMimeType)}`;
         const { error: uploadErr } = await supabase.storage
           .from("post-images")
-          .upload(fileName, blob, { contentType: recorderMimeType });
+          .upload(fileName, blob, { contentType: normalizedMimeType });
 
         if (uploadErr) { toast.error("Failed to upload voice"); setSending(false); return; }
 
         const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
-        await sendMessage(buildVoiceMessageContent(urlData.publicUrl, recorderMimeType), undefined, true);
+        await sendMessage(buildVoiceMessageContent(urlData.publicUrl, normalizedMimeType), undefined, true);
         setSending(false);
         setIsScrolledUp(false);
       };

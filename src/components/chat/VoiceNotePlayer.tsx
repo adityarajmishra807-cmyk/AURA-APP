@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,75 +9,97 @@ interface Props {
   isMine: boolean;
 }
 
-export function VoiceNotePlayer({ audioUrl, mimeType, isMine }: Props) {
+function setForwardedRef<T>(ref: React.ForwardedRef<T>, value: T) {
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
+}
+
+export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceNotePlayer(
+  { audioUrl, mimeType, isMine },
+  ref
+) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [ready, setReady] = useState(false);
-  const rafRef = useRef<number>();
-
-  const initAudio = useCallback(() => {
-    if (audioRef.current) return audioRef.current;
-    const audio = new Audio();
-    audio.preload = "metadata";
-    audio.crossOrigin = "anonymous";
-    audio.src = audioUrl;
-    audioRef.current = audio;
-
-    audio.addEventListener("loadedmetadata", () => {
-      setDuration(audio.duration);
-      setReady(true);
-    });
-    audio.addEventListener("canplay", () => setReady(true));
-    audio.addEventListener("ended", () => {
-      setPlaying(false);
-      setProgress(0);
-    });
-    audio.addEventListener("error", () => {
-      // Try without crossOrigin
-      if (audio.crossOrigin) {
-        audio.crossOrigin = "";
-        audio.src = audioUrl;
-      }
-    });
-    return audio;
-  }, [audioUrl]);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
+    setForwardedRef(ref, rootRef.current);
+    return () => setForwardedRef(ref, null as never);
+  }, [ref]);
 
-  const tick = useCallback(() => {
+  useEffect(() => {
     const audio = audioRef.current;
-    if (audio && !audio.paused) {
-      setProgress(audio.currentTime / (audio.duration || 1));
-      rafRef.current = requestAnimationFrame(tick);
-    }
-  }, []);
+    if (!audio) return;
+
+    const handleLoaded = () => {
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+      setLoadError(false);
+    };
+
+    const handleTimeUpdate = () => {
+      const nextDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      setDuration(nextDuration);
+      setProgress(nextDuration > 0 ? audio.currentTime / nextDuration : 0);
+    };
+
+    const handlePause = () => setPlaying(false);
+    const handlePlay = () => setPlaying(true);
+    const handleEnded = () => {
+      setPlaying(false);
+      setProgress(0);
+      audio.currentTime = 0;
+    };
+    const handleError = () => {
+      setPlaying(false);
+      setLoadError(true);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoaded);
+    audio.addEventListener("loadeddata", handleLoaded);
+    audio.addEventListener("durationchange", handleLoaded);
+    audio.addEventListener("canplay", handleLoaded);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleError);
+    audio.load();
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener("loadedmetadata", handleLoaded);
+      audio.removeEventListener("loadeddata", handleLoaded);
+      audio.removeEventListener("durationchange", handleLoaded);
+      audio.removeEventListener("canplay", handleLoaded);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleError);
+    };
+  }, [audioUrl]);
 
   const togglePlay = async () => {
-    const audio = initAudio();
+    const audio = audioRef.current;
+    if (!audio) return;
+
     if (playing) {
       audio.pause();
-      setPlaying(false);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    } else {
-      try {
-        await audio.play();
-        setPlaying(true);
-        rafRef.current = requestAnimationFrame(tick);
-      } catch {
-        // Fallback: open in new tab
-        window.open(audioUrl, "_blank");
-      }
+      return;
+    }
+
+    try {
+      setLoadError(false);
+      await audio.play();
+    } catch (error) {
+      console.error("Voice note play failed:", error);
+      setLoadError(true);
     }
   };
 
@@ -97,15 +119,16 @@ export function VoiceNotePlayer({ audioUrl, mimeType, isMine }: Props) {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  // Generate waveform bars (decorative)
-  const bars = Array.from({ length: 24 }, (_, i) => {
-    const h = 0.3 + 0.7 * Math.abs(Math.sin(i * 0.8 + 2));
-    return h;
-  });
+  const bars = Array.from({ length: 24 }, (_, i) => 0.3 + 0.7 * Math.abs(Math.sin(i * 0.8 + 2)));
 
   return (
-    <div className="flex items-center gap-2.5 min-w-[200px] max-w-[260px]">
+    <div ref={rootRef} className="flex items-center gap-2.5 min-w-[200px] max-w-[260px]">
+      <audio ref={audioRef} preload="metadata" playsInline className="hidden">
+        <source src={audioUrl} type={mimeType} />
+      </audio>
+
       <motion.button
+        type="button"
         whileTap={{ scale: 0.85 }}
         onClick={togglePlay}
         className={cn(
@@ -123,11 +146,7 @@ export function VoiceNotePlayer({ audioUrl, mimeType, isMine }: Props) {
       </motion.button>
 
       <div className="flex-1 flex flex-col gap-1">
-        {/* Waveform */}
-        <div
-          className="flex items-end gap-[2px] h-5 cursor-pointer"
-          onClick={handleBarClick}
-        >
+        <div className="flex items-end gap-[2px] h-5 cursor-pointer" onClick={handleBarClick}>
           {bars.map((h, i) => {
             const filled = i / bars.length <= progress;
             return (
@@ -136,8 +155,12 @@ export function VoiceNotePlayer({ audioUrl, mimeType, isMine }: Props) {
                 className={cn(
                   "w-[3px] rounded-full transition-colors duration-150",
                   filled
-                    ? isMine ? "bg-primary-foreground/90" : "bg-primary/80"
-                    : isMine ? "bg-primary-foreground/25" : "bg-muted-foreground/25"
+                    ? isMine
+                      ? "bg-primary-foreground/90"
+                      : "bg-primary/80"
+                    : isMine
+                      ? "bg-primary-foreground/25"
+                      : "bg-muted-foreground/25"
                 )}
                 style={{ height: `${h * 100}%` }}
               />
@@ -145,13 +168,16 @@ export function VoiceNotePlayer({ audioUrl, mimeType, isMine }: Props) {
           })}
         </div>
 
-        <span className={cn(
-          "text-[10px]",
-          isMine ? "text-primary-foreground/50" : "text-muted-foreground/60"
-        )}>
-          {playing ? formatTime((audioRef.current?.currentTime || 0)) : formatTime(duration)}
+        <span className={cn("text-[10px]", isMine ? "text-primary-foreground/50" : "text-muted-foreground/60")}>
+          {playing ? formatTime(audioRef.current?.currentTime || 0) : formatTime(duration)}
         </span>
+
+        {loadError && (
+          <audio controls playsInline preload="metadata" className="mt-1 h-8 w-full max-w-[180px]">
+            <source src={audioUrl} type={mimeType} />
+          </audio>
+        )}
       </div>
     </div>
   );
-}
+});
