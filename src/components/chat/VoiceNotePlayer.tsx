@@ -27,6 +27,7 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loadError, setLoadError] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     setForwardedRef(ref, rootRef.current);
@@ -37,9 +38,20 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
     const audio = audioRef.current;
     if (!audio) return;
 
+     setPlaying(false);
+     setProgress(0);
+     setDuration(0);
+     setLoadError(false);
+     setIsReady(false);
+
+     audio.pause();
+     audio.src = audioUrl;
+     audio.preload = "metadata";
+
     const handleLoaded = () => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
       setLoadError(false);
+       setIsReady(true);
     };
 
     const handleTimeUpdate = () => {
@@ -58,12 +70,14 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
     const handleError = () => {
       setPlaying(false);
       setLoadError(true);
+       setIsReady(false);
     };
 
     audio.addEventListener("loadedmetadata", handleLoaded);
     audio.addEventListener("loadeddata", handleLoaded);
     audio.addEventListener("durationchange", handleLoaded);
     audio.addEventListener("canplay", handleLoaded);
+     audio.addEventListener("canplaythrough", handleLoaded);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("pause", handlePause);
     audio.addEventListener("play", handlePlay);
@@ -73,17 +87,20 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
 
     return () => {
       audio.pause();
+       audio.removeAttribute("src");
+       audio.load();
       audio.removeEventListener("loadedmetadata", handleLoaded);
       audio.removeEventListener("loadeddata", handleLoaded);
       audio.removeEventListener("durationchange", handleLoaded);
       audio.removeEventListener("canplay", handleLoaded);
+       audio.removeEventListener("canplaythrough", handleLoaded);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
     };
-  }, [audioUrl]);
+  }, [audioUrl, mimeType]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -96,6 +113,9 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
 
     try {
       setLoadError(false);
+      if (!isReady) {
+        audio.load();
+      }
       await audio.play();
     } catch (error) {
       console.error("Voice note play failed:", error);
@@ -123,16 +143,15 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
 
   return (
     <div ref={rootRef} className="flex items-center gap-2.5 min-w-[200px] max-w-[260px]">
-      <audio ref={audioRef} preload="metadata" playsInline className="hidden">
-        <source src={audioUrl} type={mimeType} />
-      </audio>
+      <audio ref={audioRef} preload="metadata" playsInline className="sr-only" />
 
       <motion.button
         type="button"
         whileTap={{ scale: 0.85 }}
         onClick={togglePlay}
+        disabled={loadError}
         className={cn(
-          "w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors",
+          "w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors disabled:opacity-60",
           isMine
             ? "bg-primary-foreground/20 hover:bg-primary-foreground/30"
             : "bg-primary/15 hover:bg-primary/25"
@@ -173,8 +192,8 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
         </span>
 
         {loadError && (
-          <audio controls playsInline preload="metadata" className="mt-1 h-8 w-full max-w-[180px]">
-            <source src={audioUrl} type={mimeType} />
+          <audio controls playsInline preload="metadata" src={audioUrl} className="mt-1 h-8 w-full max-w-[180px] rounded-md">
+            {mimeType ? <source src={audioUrl} type={mimeType} /> : null}
           </audio>
         )}
       </div>
