@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseVoiceMessageContent } from "@/lib/voiceNotes";
 
 export interface AppNotification {
   id: string;
