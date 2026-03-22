@@ -19,8 +19,8 @@ export function AvatarSection({ avatarUrl, username, userId, equippedFrame, onAv
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image must be under 20MB");
       return;
     }
     setUploading(true);
