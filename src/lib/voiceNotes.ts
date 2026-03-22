@@ -78,14 +78,19 @@ export function buildVoiceMessageContent(url: string, mimeType?: string) {
 }
 
 export function parseVoiceMessageContent(content: string): VoiceNotePayload | null {
-  if (!content.startsWith("🎤 Voice message\n")) return null;
+  if (!content.startsWith("🎤 Voice message")) return null;
 
-  const [, url = "", mimeType] = content.split("\n");
+  const lines = content.split("\n").map((line) => line.trim()).filter(Boolean);
+  const inlineUrlMatch = content.match(/https?:\/\/\S+/i);
+  const url = lines.find((line) => /^https?:\/\//i.test(line)) || inlineUrlMatch?.[0] || "";
+
   if (!url) return null;
+
+  const mimeLine = lines.find((line) => line !== "🎤 Voice message" && line !== url && !/^https?:\/\//i.test(line));
 
   return {
     label: "🎤 Voice message",
     url,
-    mimeType: mimeType ? normalizeVoiceNoteMimeType(mimeType) : undefined,
+    mimeType: mimeLine ? normalizeVoiceNoteMimeType(mimeLine) : undefined,
   };
 }

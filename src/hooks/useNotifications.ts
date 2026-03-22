@@ -147,7 +147,11 @@ function formatNotificationBody(type: string, body: string) {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            const newNotif = payload.new as AppNotification;
+            const incomingNotification = payload.new as AppNotification;
+            const newNotif: AppNotification = {
+              ...incomingNotification,
+              body: formatNotificationBody(incomingNotification.type, incomingNotification.body),
+            };
             setNotifications((prev) => {
               if (prev.some((n) => n.id === newNotif.id)) return prev;
               return [newNotif, ...prev];
