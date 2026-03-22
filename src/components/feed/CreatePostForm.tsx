@@ -78,24 +78,39 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
     setSubmitting(true);
     let primaryImageUrl: string | null = null;
+    const uploadedMedia: { media_url: string; media_type: string; position: number }[] = [];
 
-    // Upload first file as primary image_url for backwards compat
     if (mediaFiles.length > 0) {
-      const file = mediaFiles[0];
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("post-images")
-        .upload(path, file);
+      for (let i = 0; i < mediaFiles.length; i++) {
+        const file = mediaFiles[i];
+        const ext = file.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}_${i}.${ext}`;
+        const mediaType = mediaPreviews[i]?.type || "image";
 
-      if (uploadError) {
-        toast.error("Upload failed");
-        setSubmitting(false);
-        return;
+        const { error: uploadError } = await supabase.storage
+          .from("post-images")
+          .upload(path, file);
+
+        if (uploadError) {
+          toast.error("Upload failed");
+          setSubmitting(false);
+          return;
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("post-images").getPublicUrl(path);
+
+        uploadedMedia.push({
+          media_url: publicUrl,
+          media_type: mediaType,
+          position: i,
+        });
+
+        if (!primaryImageUrl && mediaType === "image") {
+          primaryImageUrl = publicUrl;
+        }
       }
-
-      const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(path);
-      primaryImageUrl = publicUrl;
     }
 
     // Create post
@@ -111,31 +126,18 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
       return;
     }
 
-    // Upload additional media files (index 1+) to post_media
-    if (mediaFiles.length > 1) {
-      // Also insert the first file into post_media for carousel consistency
-      const mediaInserts: { post_id: string; media_url: string; media_type: string; position: number }[] = [];
+    if (uploadedMedia.length > 0) {
+      const mediaInserts = uploadedMedia.map((item) => ({
+        post_id: post.id,
+        media_url: item.media_url,
+        media_type: item.media_type,
+        position: item.position,
+      }));
 
-      for (let i = 0; i < mediaFiles.length; i++) {
-        let url: string;
-        if (i === 0) {
-          url = primaryImageUrl!;
-        } else {
-          const file = mediaFiles[i];
-          const ext = file.name.split(".").pop();
-          const path = `${user.id}/${Date.now()}_${i}.${ext}`;
-          const { error: upErr } = await supabase.storage.from("post-images").upload(path, file);
-          if (upErr) continue;
-          const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(path);
-          url = publicUrl;
-        }
+      const { error: mediaError } = await supabase.from("post_media").insert(mediaInserts);
 
-        const mType = mediaPreviews[i]?.type || "image";
-        mediaInserts.push({ post_id: post.id, media_url: url, media_type: mType, position: i });
-      }
-
-      if (mediaInserts.length) {
-        await supabase.from("post_media").insert(mediaInserts);
+      if (mediaError) {
+        toast.error("Post created, but media sync failed");
       }
     }
 
