@@ -19,6 +19,7 @@ interface College {
 
 export default function ProfileSetup() {
   const { user, profile, loading, refreshProfile } = useAuth();
+  const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [collegeId, setCollegeId] = useState("");
   const [colleges, setColleges] = useState<College[]>([]);
@@ -34,6 +35,7 @@ export default function ProfileSetup() {
 
   useEffect(() => {
     if (profile) {
+      setUsername(profile.username || "");
       setBio(profile.bio || "");
       setCollegeId(profile.college_id || "");
       setAvatarUrl(profile.avatar_url);
@@ -71,8 +73,21 @@ export default function ProfileSetup() {
   };
 
   const handleSave = async () => {
+    if (!username.trim() || username.trim().length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      toast.error("Username can only contain letters, numbers, and underscores");
+      return;
+    }
     if (!collegeId) {
       toast.error("Please select your college");
+      return;
+    }
+    const usernameCheck = validateContent(username);
+    if (usernameCheck) {
+      toast.error(usernameCheck);
       return;
     }
     const bioCheck = validateContent(bio);
@@ -82,15 +97,31 @@ export default function ProfileSetup() {
     }
     setSaving(true);
 
+    // Check if username is taken (if changed)
+    if (username.trim() !== profile?.username) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username.trim())
+        .neq("user_id", user!.id)
+        .maybeSingle();
+      if (existing) {
+        toast.error("Username is already taken");
+        setSaving(false);
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({
+        username: username.trim(),
         bio,
         college_id: collegeId,
         avatar_url: avatarUrl,
         college_changed_at: new Date().toISOString(),
       })
-      .eq("user_id", user.id);
+      .eq("user_id", user!.id);
 
     if (error) {
       toast.error("Failed to save profile");
@@ -138,10 +169,18 @@ export default function ProfileSetup() {
             <p className="text-xs text-muted-foreground">{uploading ? "Uploading..." : "Click to upload avatar"}</p>
           </div>
 
-          {/* Username (read-only) */}
+          {/* Username (editable) */}
           <div className="space-y-2">
-            <Label>Username</Label>
-            <Input value={profile?.username || ""} disabled className="bg-muted/30 border-border/30" />
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              placeholder="Pick a unique username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+              maxLength={20}
+              className="bg-muted/50 border-border/50 focus:border-primary"
+            />
+            <p className="text-xs text-muted-foreground">Letters, numbers, and underscores only</p>
           </div>
 
           {/* Bio */}
