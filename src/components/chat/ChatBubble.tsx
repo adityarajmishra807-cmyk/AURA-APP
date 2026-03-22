@@ -88,7 +88,6 @@ export function ChatBubble({
   const [showActions, setShowActions] = useState(false);
   const [tapped, setTapped] = useState(false);
   const [showReport, setShowReport] = useState(false);
-  const [audioFailed, setAudioFailed] = useState(false);
 
   const borderRadius = isMine
     ? `${isFirstInGroup ? "18px" : "6px"} 18px 18px ${isLastInGroup ? "18px" : "6px"}`
