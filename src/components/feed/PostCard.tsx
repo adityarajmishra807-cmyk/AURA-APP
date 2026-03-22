@@ -315,8 +315,8 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
           )
         )}
 
-        {/* Media Carousel for multi-media posts */}
-        {post.media && post.media.length > 1 ? (
+        {/* Media display */}
+        {post.media && post.media.length > 0 ? (
           <MediaCarousel items={post.media} />
         ) : post.image_url && (
           <motion.div
