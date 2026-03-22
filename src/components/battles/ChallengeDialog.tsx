@@ -63,13 +63,20 @@ export function ChallengeDialog({ open, onOpenChange, targetUserId, targetUserna
       return;
     }
     setSubmitting(true);
-    const { data } = await supabase.rpc("create_battle", {
+    const { data, error } = await supabase.rpc("create_battle", {
       p_opponent_id: selectedOpponent.id,
       p_stake: stake,
       p_mode: mode,
       p_theme: mode === "theme" ? theme : null,
     });
     setSubmitting(false);
+
+    if (error) {
+      console.error("Battle RPC error:", error);
+      toast.error(error.message || "Failed to create battle");
+      return;
+    }
+
     const result = data as any;
     if (result?.success) {
       toast.success(`⚔️ Challenge sent! ${stake} AURIX staked`);
