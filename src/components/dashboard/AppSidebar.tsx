@@ -17,6 +17,7 @@ import {
   Gift,
   MessageCircle,
   Download,
+  Swords,
 } from "lucide-react";
 
 const navItems = [
