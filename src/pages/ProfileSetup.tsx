@@ -73,8 +73,21 @@ export default function ProfileSetup() {
   };
 
   const handleSave = async () => {
+    if (!username.trim() || username.trim().length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      toast.error("Username can only contain letters, numbers, and underscores");
+      return;
+    }
     if (!collegeId) {
       toast.error("Please select your college");
+      return;
+    }
+    const usernameCheck = validateContent(username);
+    if (usernameCheck) {
+      toast.error(usernameCheck);
       return;
     }
     const bioCheck = validateContent(bio);
@@ -84,15 +97,31 @@ export default function ProfileSetup() {
     }
     setSaving(true);
 
+    // Check if username is taken (if changed)
+    if (username.trim() !== profile?.username) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username.trim())
+        .neq("user_id", user!.id)
+        .maybeSingle();
+      if (existing) {
+        toast.error("Username is already taken");
+        setSaving(false);
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({
+        username: username.trim(),
         bio,
         college_id: collegeId,
         avatar_url: avatarUrl,
         college_changed_at: new Date().toISOString(),
       })
-      .eq("user_id", user.id);
+      .eq("user_id", user!.id);
 
     if (error) {
       toast.error("Failed to save profile");
