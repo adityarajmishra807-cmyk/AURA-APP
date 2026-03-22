@@ -21,6 +21,7 @@ import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ProfilePictureModal } from "@/components/ui/ProfilePictureModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,6 +84,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
+  const [showPfpModal, setShowPfpModal] = useState(false);
   const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
@@ -184,7 +186,15 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
         {/* Header */}
         <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
           <Link to={`/profile/${post.profiles.username}`}>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 500 }}>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 500 }}
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPfpModal(true);
+              }}
+            >
               <Avatar className={cn("w-9 h-9 md:w-10 md:h-10 border border-border tap-scale", cosmetics.frame)}>
                 <AvatarImage src={post.profiles.avatar_url || ""} />
                 <AvatarFallback className="bg-muted font-display font-bold text-xs md:text-sm">
@@ -481,6 +491,13 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
         contentType="post"
         contentId={post.id}
         reportedUserId={post.user_id}
+      />
+
+      <ProfilePictureModal
+        open={showPfpModal}
+        onOpenChange={setShowPfpModal}
+        imageUrl={post.profiles.avatar_url}
+        username={post.profiles.username}
       />
     </motion.div>
   );
