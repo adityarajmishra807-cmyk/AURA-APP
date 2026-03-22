@@ -150,6 +150,15 @@ export function ChatHeader({ otherUser, energy, onBack }: Props) {
           <div className="flex items-center gap-0.5 shrink-0">
             <motion.button
               whileTap={{ scale: 0.88 }}
+              onClick={() => { setChallengeOpen(true); setShowMenu(false); }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
+              title="Challenge to battle"
+            >
+              <Swords className="w-[18px] h-[18px]" />
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               onClick={() => handleCall("voice")}
               className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/70 hover:text-primary"
               title="Voice call"
