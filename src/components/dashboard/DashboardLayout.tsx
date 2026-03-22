@@ -29,7 +29,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       <AppSidebar />
       <main className="flex-1 p-4 md:p-8 overflow-auto pb-20 md:pb-8">
         {/* Mobile notification bell */}
-        <div className="flex justify-end mb-2 md:mb-0 md:absolute md:top-6 md:right-8 z-20">
+        <div className="flex justify-end mb-2 pt-2 md:pt-0 md:mb-0 md:absolute md:top-6 md:right-8 z-20">
           <NotificationBell />
         </div>
         <AnimatePresence mode="wait">
