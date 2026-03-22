@@ -127,7 +127,7 @@ export function ChatView() {
         if (uploadErr) { toast.error("Failed to upload voice"); setSending(false); return; }
 
         const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
-        await sendMessage(`🎤 Voice message\n${urlData.publicUrl}`);
+        await sendMessage(`🎤 Voice message\n${urlData.publicUrl}`, undefined, true);
         setSending(false);
         setIsScrolledUp(false);
       };

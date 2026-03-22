@@ -218,14 +218,16 @@ export function useChatMessages(conversationId: string | null) {
     });
   }, [user]);
 
-  const sendMessage = useCallback(async (content: string, replyToId?: string) => {
+  const sendMessage = useCallback(async (content: string, replyToId?: string, skipProfanityCheck?: boolean) => {
     if (!conversationId || !user || !content.trim()) return;
-    // Profanity check
-    const profanityError = validateContent(content);
-    if (profanityError) {
-      const { toast } = await import("sonner");
-      toast.error(profanityError);
-      return;
+    // Profanity check (skip for voice notes / media)
+    if (!skipProfanityCheck) {
+      const profanityError = validateContent(content);
+      if (profanityError) {
+        const { toast } = await import("sonner");
+        toast.error(profanityError);
+        return;
+      }
     }
     await supabase.from("messages").insert({
       conversation_id: conversationId,
