@@ -169,10 +169,18 @@ export default function ProfileSetup() {
             <p className="text-xs text-muted-foreground">{uploading ? "Uploading..." : "Click to upload avatar"}</p>
           </div>
 
-          {/* Username (read-only) */}
+          {/* Username (editable) */}
           <div className="space-y-2">
-            <Label>Username</Label>
-            <Input value={profile?.username || ""} disabled className="bg-muted/30 border-border/30" />
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              placeholder="Pick a unique username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+              maxLength={20}
+              className="bg-muted/50 border-border/50 focus:border-primary"
+            />
+            <p className="text-xs text-muted-foreground">Letters, numbers, and underscores only</p>
           </div>
 
           {/* Bio */}
