@@ -30,6 +30,7 @@ function formatNotificationBody(type: string, body: string) {
   return body;
 }
 
+export function useNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
