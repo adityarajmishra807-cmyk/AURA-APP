@@ -21,6 +21,17 @@ export interface VoiceNotePayload {
   mimeType?: string;
 }
 
+export function isVoiceMessageLike(content: string) {
+  const normalizedContent = content.trim().toLowerCase();
+
+  return (
+    normalizedContent.includes("voice message") ||
+    normalizedContent.includes("🎤") ||
+    normalizedContent.includes("🎙") ||
+    /\/storage\/v1\/object\/.*\/(m4a|mp3|ogg|webm)(\?|$)/i.test(content)
+  );
+}
+
 export function normalizeVoiceNoteMimeType(mimeType?: string) {
   const normalized = mimeType?.toLowerCase().trim();
 
@@ -79,7 +90,7 @@ export function buildVoiceMessageContent(url: string, mimeType?: string) {
 
 export function parseVoiceMessageContent(content: string): VoiceNotePayload | null {
   const normalizedContent = content.trim();
-  const hasVoiceLabel = /^(🎤\s*)?voice message/i.test(normalizedContent);
+  const hasVoiceLabel = isVoiceMessageLike(normalizedContent);
 
   if (!hasVoiceLabel) return null;
 

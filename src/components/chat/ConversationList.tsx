@@ -10,7 +10,7 @@ import { Search, MessageCircle, Plus, ArrowLeft, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { parseVoiceMessageContent } from "@/lib/voiceNotes";
+import { isVoiceMessageLike, parseVoiceMessageContent } from "@/lib/voiceNotes";
 
 function getAuraTier(balance: number) {
   if (balance >= 5000) return { label: "💎", ring: "ring-2 ring-aura-gold/40 shadow-[0_0_12px_hsl(var(--aura-gold)/0.25)]" };
@@ -28,7 +28,7 @@ function formatPreview(content: string): string {
   if (content.startsWith("__call:rejected:video:")) return "📹 Declined video call";
   if (content.startsWith("__call:rejected:audio:")) return "📞 Declined voice call";
   if (content.startsWith("__call:")) return "📞 Call";
-  if (parseVoiceMessageContent(content)) return "🎙️ Voice message";
+  if (parseVoiceMessageContent(content) || isVoiceMessageLike(content)) return "VN";
   return content;
 }
 
