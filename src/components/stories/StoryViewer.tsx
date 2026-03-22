@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star, ThumbsUp, ThumbsDown } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Eye, Heart, Flame, Zap, Star, Trash2 } from "lucide-react";
 import { StoryGroup } from "@/hooks/useStories";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
