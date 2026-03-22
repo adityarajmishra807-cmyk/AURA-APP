@@ -35,6 +35,7 @@ export default function ProfileSetup() {
 
   useEffect(() => {
     if (profile) {
+      setUsername(profile.username || "");
       setBio(profile.bio || "");
       setCollegeId(profile.college_id || "");
       setAvatarUrl(profile.avatar_url);
