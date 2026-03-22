@@ -10,7 +10,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!session) return <Navigate to="/auth" replace />;
-  if (!profile?.college_id) return <Navigate to="/profile-setup" replace />;
+  
+  // If session exists but profile hasn't loaded yet (Google OAuth delay), show loader
+  if (!profile) return <AuraLoader />;
+  
+  if (!profile.college_id) return <Navigate to="/profile-setup" replace />;
 
   return <>{children}</>;
 }
