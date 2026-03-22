@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FriendButton } from "./FriendButton";
 import { AnimatedRatingBar } from "./AnimatedRatingBar";
-import { Coins, Clock, Check, Trash2, MoreVertical, Share2 } from "lucide-react";
+import { Coins, Clock, Check, Trash2, MoreVertical, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HashtagRenderer } from "./HashtagRenderer";
