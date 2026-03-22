@@ -28,7 +28,7 @@ function formatPreview(content: string): string {
   if (content.startsWith("__call:rejected:video:")) return "📹 Declined video call";
   if (content.startsWith("__call:rejected:audio:")) return "📞 Declined voice call";
   if (content.startsWith("__call:")) return "📞 Call";
-  if (content.startsWith("__voice:")) return "🎙️ Voice message";
+  if (parseVoiceMessageContent(content)) return "🎙️ Voice message";
   return content;
 }
 
