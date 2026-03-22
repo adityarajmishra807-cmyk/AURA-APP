@@ -80,6 +80,9 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [saving, setSaving] = useState(false);
   const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
