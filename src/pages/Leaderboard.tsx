@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LeaderboardSkeleton } from "@/components/skeletons/Skeletons";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Trophy, Coins, Flame, Crown, Medal, ChevronsUpDown, Check, Search } from "lucide-react";
+import { Trophy, Coins, Flame, Crown, Medal, ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cosmeticProps, nameColorProps } from "@/lib/cosmeticStyles";
 
@@ -19,7 +19,7 @@ interface LeaderboardEntry {
   username: string;
   avatar_url: string | null;
   aurix_balance: number;
-  college_id?: string;
+  college_id?: string | null;
   streak_count: number;
 }
 
@@ -32,6 +32,18 @@ interface CosmeticInfo {
 interface College {
   id: string;
   name: string;
+}
+
+interface LeaderboardProfileRow {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  aurix_balance: number;
+  college_id: string | null;
+  streak_count: number;
+  equipped_frame: string | null;
+  equipped_name_color: string | null;
+  equipped_badge: string | null;
 }
 
 export default function Leaderboard() {
@@ -61,62 +73,96 @@ export default function Leaderboard() {
     if (profile?.college_id && !selectedCollege) {
       setSelectedCollege(profile.college_id);
     }
-  }, [profile]);
+  }, [profile, selectedCollege]);
+
+  const loadEntries = useCallback(async () => {
+    setLoading(true);
+
+    if (tab === "college" && !selectedCollege) {
+      setEntries([]);
+      setCosmetics({});
+      setLoading(false);
+      return;
+    }
+
+    let query = supabase
+      .from("profiles")
+      .select("user_id, username, avatar_url, aurix_balance, college_id, streak_count, equipped_frame, equipped_name_color, equipped_badge")
+      .order("aurix_balance", { ascending: false })
+      .limit(100);
+
+    if (tab === "college") {
+      query = query.eq("college_id", selectedCollege);
+    }
+
+    const { data } = await query;
+    const rows = (data || []) as LeaderboardProfileRow[];
+
+    const rankedEntries: LeaderboardEntry[] = rows.map((row, index) => ({
+      rank: index + 1,
+      username: row.username,
+      avatar_url: row.avatar_url,
+      aurix_balance: row.aurix_balance,
+      college_id: row.college_id,
+      streak_count: row.streak_count,
+    }));
+
+    setEntries(rankedEntries);
+
+    if (rows.length === 0) {
+      setCosmetics({});
+      setLoading(false);
+      return;
+    }
+
+    const itemIds = rows
+      .flatMap((row) => [row.equipped_frame, row.equipped_name_color, row.equipped_badge])
+      .filter(Boolean);
+
+    const itemMap: Record<string, { preview_value: string }> = {};
+    if (itemIds.length > 0) {
+      const { data: items } = await supabase
+        .from("shop_items")
+        .select("id, preview_value")
+        .in("id", itemIds);
+      items?.forEach((item) => {
+        itemMap[item.id] = item;
+      });
+    }
+
+    const cosmeticsMap: Record<string, CosmeticInfo> = {};
+    rows.forEach((row) => {
+      cosmeticsMap[row.username] = {
+        frame: row.equipped_frame ? itemMap[row.equipped_frame]?.preview_value ?? null : null,
+        nameColor: row.equipped_name_color ? itemMap[row.equipped_name_color]?.preview_value ?? null : null,
+        badge: row.equipped_badge ? itemMap[row.equipped_badge]?.preview_value ?? null : null,
+      };
+    });
+
+    setCosmetics(cosmeticsMap);
+    setLoading(false);
+  }, [tab, selectedCollege]);
 
   useEffect(() => {
-    setLoading(true);
-    const loadEntries = async () => {
-      let data: any[] = [];
-      if (tab === "global") {
-        const res = await supabase.rpc("get_leaderboard", { p_limit: 100 });
-        data = (res.data as any[]) || [];
-      } else if (selectedCollege) {
-        const res = await supabase.rpc("get_college_leaderboard", {
-          p_college_id: selectedCollege,
-          p_limit: 100,
-        });
-        data = (res.data as any[]) || [];
-      }
-      setEntries(data);
-
-      // Bulk fetch cosmetics for all leaderboard users
-      if (data.length > 0) {
-        const usernames = data.map((e: any) => e.username);
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("username, equipped_frame, equipped_name_color, equipped_badge")
-          .in("username", usernames);
-
-        if (profiles) {
-          const itemIds = profiles
-            .flatMap((p: any) => [p.equipped_frame, p.equipped_name_color, p.equipped_badge])
-            .filter(Boolean);
-
-          let itemMap: Record<string, { category: string; preview_value: string }> = {};
-          if (itemIds.length > 0) {
-            const { data: items } = await supabase
-              .from("shop_items")
-              .select("id, category, preview_value")
-              .in("id", itemIds);
-            items?.forEach((item: any) => { itemMap[item.id] = item; });
-          }
-
-          const cosmeticsMap: Record<string, CosmeticInfo> = {};
-          profiles.forEach((p: any) => {
-            cosmeticsMap[p.username] = {
-              frame: p.equipped_frame ? itemMap[p.equipped_frame]?.preview_value : null,
-              nameColor: p.equipped_name_color ? itemMap[p.equipped_name_color]?.preview_value : null,
-              badge: p.equipped_badge ? itemMap[p.equipped_badge]?.preview_value : null,
-            };
-          });
-          setCosmetics(cosmeticsMap);
-        }
-      }
-
-      setLoading(false);
-    };
     loadEntries();
-  }, [tab, selectedCollege]);
+  }, [loadEntries]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`leaderboard-realtime-${tab}-${selectedCollege || "all"}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          loadEntries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadEntries, tab, selectedCollege]);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 md:w-5 md:h-5 text-aura-gold" />;
