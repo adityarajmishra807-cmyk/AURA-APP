@@ -151,6 +151,7 @@ export function StoryBar() {
             onClose={handleCloseViewer}
             onViewed={markViewed}
             onReact={reactToStory}
+            onDelete={deleteStory}
             viewedStoryIds={viewedStoryIds}
           />
         )}
