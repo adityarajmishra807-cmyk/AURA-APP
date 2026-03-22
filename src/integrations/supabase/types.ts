@@ -665,6 +665,7 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string
+          username_changed_at: string | null
           vibe_tags: string[] | null
         }
         Insert: {
@@ -695,6 +696,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           username: string
+          username_changed_at?: string | null
           vibe_tags?: string[] | null
         }
         Update: {
@@ -725,6 +727,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+          username_changed_at?: string | null
           vibe_tags?: string[] | null
         }
         Relationships: [

@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles } from "lucide-react";
+import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { validateContent } from "@/lib/profanityFilter";
 
@@ -68,6 +68,53 @@ export default function Settings() {
   const [branch, setBranch] = useState("");
   const [vibeTags, setVibeTags] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [usernameSaving, setUsernameSaving] = useState(false);
+
+  const canChangeUsername = (() => {
+    if (!profile?.username_changed_at) return true;
+    const changed = new Date(profile.username_changed_at).getTime();
+    return Date.now() - changed > 7 * 24 * 60 * 60 * 1000;
+  })();
+
+  const nextUsernameChangeDate = profile?.username_changed_at
+    ? new Date(new Date(profile.username_changed_at).getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
+
+  const handleUsernameChange = async () => {
+    if (!user || !newUsername.trim()) return;
+    const trimmed = newUsername.trim().toLowerCase().replace(/\s+/g, "_");
+    if (trimmed.length < 3) { toast.error("Username must be at least 3 characters"); return; }
+    if (trimmed.length > 20) { toast.error("Username must be 20 characters or less"); return; }
+    if (!/^[a-z0-9_]+$/.test(trimmed)) { toast.error("Only letters, numbers and underscores allowed"); return; }
+    const profanityErr = validateContent(trimmed);
+    if (profanityErr) { toast.error(profanityErr); return; }
+
+    // Check uniqueness
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("username", trimmed)
+      .neq("user_id", user.id)
+      .maybeSingle();
+    if (existing) { toast.error("Username already taken"); return; }
+
+    setUsernameSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username: trimmed, username_changed_at: new Date().toISOString() })
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast.error("Failed to change username");
+    } else {
+      await refreshProfile();
+      toast.success("Username changed! ✨");
+      setEditingUsername(false);
+    }
+    setUsernameSaving(false);
+  };
 
   useEffect(() => {
     supabase.from("colleges").select("id, name").order("name").then(({ data }) => {
@@ -183,17 +230,79 @@ export default function Settings() {
               />
             </motion.div>
 
-            {/* 2. Username (read-only) */}
+            {/* 2. Username */}
             <motion.div custom={1} variants={sectionVariants} initial="hidden" animate="visible">
-              <GlowInput
-                label="Username"
-                id="username"
-                value={profile?.username || ""}
-                onChange={() => {}}
-                prefix="@"
-                disabled
-                hint="Username cannot be changed"
-              />
+              {editingUsername ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Username</label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 group">
+                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 opacity-100 blur-sm" />
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-purple-400/70 text-sm font-medium pointer-events-none z-10">@</span>
+                        <input
+                          autoFocus
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value.toLowerCase().replace(/\s/g, "_"))}
+                          maxLength={20}
+                          placeholder="new_username"
+                          className="w-full pl-8 pr-3 py-2 rounded-md bg-background/50 border border-purple-500/50 text-foreground text-sm outline-none placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      disabled={usernameSaving || !newUsername.trim()}
+                      onClick={handleUsernameChange}
+                      className="h-9 w-9 text-green-400 hover:bg-green-500/10 shrink-0"
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setEditingUsername(false)}
+                      className="h-9 w-9 text-muted-foreground hover:bg-destructive/10 shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60">3-20 chars, letters, numbers & underscores only</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Username</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 relative group">
+                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 opacity-0 blur-sm" />
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-purple-400/70 text-sm font-medium pointer-events-none z-10">@</span>
+                        <input
+                          disabled
+                          value={profile?.username || ""}
+                          className="w-full pl-8 pr-3 py-2 rounded-md bg-background/50 border border-border/30 text-foreground text-sm disabled:opacity-70"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      disabled={!canChangeUsername}
+                      onClick={() => { setNewUsername(profile?.username || ""); setEditingUsername(true); }}
+                      className="h-9 w-9 text-purple-400 hover:bg-purple-500/10 shrink-0 disabled:opacity-40"
+                      title={canChangeUsername ? "Change username" : "Available after cooldown"}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60">
+                    {canChangeUsername
+                      ? "You can change your username (once per week)"
+                      : `Next change available ${nextUsernameChangeDate?.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`}
+                  </p>
+                </div>
+              )}
             </motion.div>
 
             {/* 3. Bio */}
