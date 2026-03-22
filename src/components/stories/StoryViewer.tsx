@@ -32,7 +32,7 @@ interface StoryViewerProps {
   viewedStoryIds: Set<string>;
 }
 
-export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onReact, viewedStoryIds }: StoryViewerProps) {
+export function StoryViewer({ groups, initialGroupIndex, onClose, onViewed, onReact, onDelete, viewedStoryIds }: StoryViewerProps) {
   const { user } = useAuth();
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
   const [storyIndex, setStoryIndex] = useState(0);
