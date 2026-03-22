@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState, type ForwardedRef, type MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
