@@ -101,7 +101,7 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     // Create post
     const { data: post, error } = await supabase
       .from("posts")
-      .insert({ user_id: user.id, content: content.trim() || "📸", image_url: primaryImageUrl })
+      .insert({ user_id: user.id, content: content.trim() || "", image_url: primaryImageUrl })
       .select("id")
       .single();
 
