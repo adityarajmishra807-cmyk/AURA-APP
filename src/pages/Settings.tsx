@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { validateContent } from "@/lib/profanityFilter";
 
 import { AvatarSection } from "@/components/settings/AvatarSection";
 import { GlowInput } from "@/components/settings/GlowInput";
