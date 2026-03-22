@@ -5,6 +5,7 @@ import { PostFeed } from "@/components/feed/PostFeed";
 import { ParallaxBackground } from "@/components/feed/ParallaxBackground";
 import { FloatingParticles } from "@/components/feed/FloatingParticles";
 import { StreakClaimer } from "@/components/StreakClaimer";
+import { FeedbackBot } from "@/components/FeedbackBot";
 import { StoryBar } from "@/components/stories/StoryBar";
 import { UserSearch } from "@/components/feed/UserSearch";
 import { useAuth } from "@/contexts/AuthContext";
