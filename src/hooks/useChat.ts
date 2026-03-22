@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateContent } from "@/lib/profanityFilter";
 
 export interface ChatMessage {
   id: string;
@@ -219,6 +220,13 @@ export function useChatMessages(conversationId: string | null) {
 
   const sendMessage = useCallback(async (content: string, replyToId?: string) => {
     if (!conversationId || !user || !content.trim()) return;
+    // Profanity check
+    const profanityError = validateContent(content);
+    if (profanityError) {
+      const { toast } = await import("sonner");
+      toast.error(profanityError);
+      return;
+    }
     await supabase.from("messages").insert({
       conversation_id: conversationId,
       sender_id: user.id,

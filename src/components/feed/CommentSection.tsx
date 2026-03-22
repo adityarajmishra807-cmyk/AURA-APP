@@ -9,6 +9,7 @@ import { MessageCircle, Send, Trash2, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { validateContent } from "@/lib/profanityFilter";
 
 interface Comment {
   id: string;
@@ -101,6 +102,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
     if (!user || !newComment.trim() || submitting) return;
     if (newComment.length > 300) {
       toast.error("Comment must be 300 characters or less");
+      return;
+    }
+    const profanityError = validateContent(newComment);
+    if (profanityError) {
+      toast.error(profanityError);
       return;
     }
     setSubmitting(true);

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Sparkles, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { validateContent } from "@/lib/profanityFilter";
 
 interface College {
   id: string;
@@ -72,6 +73,11 @@ export default function ProfileSetup() {
   const handleSave = async () => {
     if (!collegeId) {
       toast.error("Please select your college");
+      return;
+    }
+    const bioCheck = validateContent(bio);
+    if (bioCheck) {
+      toast.error(bioCheck);
       return;
     }
     setSaving(true);
