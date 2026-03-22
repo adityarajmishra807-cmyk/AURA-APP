@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessage } from "@/hooks/useChat";
 import { ReportDialog } from "@/components/reports/ReportDialog";
 import { parseVoiceMessageContent } from "@/lib/voiceNotes";
+import { VoiceNotePlayer } from "@/components/chat/VoiceNotePlayer";
 
 const reactionTypes = [
   { key: "impact", label: "Impact", icon: Zap },
