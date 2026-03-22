@@ -100,7 +100,7 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
     };
-  }, [audioUrl]);
+  }, [audioUrl, mimeType]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -143,7 +143,7 @@ export const VoiceNotePlayer = forwardRef<HTMLDivElement, Props>(function VoiceN
 
   return (
     <div ref={rootRef} className="flex items-center gap-2.5 min-w-[200px] max-w-[260px]">
-      <audio ref={audioRef} preload="metadata" playsInline className="sr-only" type={mimeType} />
+      <audio ref={audioRef} preload="metadata" playsInline className="sr-only" />
 
       <motion.button
         type="button"
