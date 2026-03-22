@@ -15,6 +15,7 @@ import { MediaCarousel } from "./MediaCarousel";
 import { SharePostDialog } from "./SharePostDialog";
 import { CommentSection } from "./CommentSection";
 import { PostLikeButton } from "./PostLikeButton";
+import { ReportDialog } from "@/components/reports/ReportDialog";
 import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
