@@ -14,7 +14,22 @@ export interface AppNotification {
   created_at: string;
 }
 
-export function useNotifications() { // force rebuild
+
+function formatNotificationBody(type: string, body: string) {
+  if (type !== "new_message") return body;
+
+  if (body.startsWith("__call:ended:video:")) return `📹 Video call · ${body.split(":")[3]}`;
+  if (body.startsWith("__call:ended:audio:")) return `📞 Voice call · ${body.split(":")[3]}`;
+  if (body.startsWith("__call:missed:video:")) return "📹 Missed video call";
+  if (body.startsWith("__call:missed:audio:")) return "📞 Missed voice call";
+  if (body.startsWith("__call:rejected:video:")) return "📹 Declined video call";
+  if (body.startsWith("__call:rejected:audio:")) return "📞 Declined voice call";
+  if (body.startsWith("__call:")) return "📞 Call";
+  if (parseVoiceMessageContent(body)) return "🎙️ Voice message";
+
+  return body;
+}
+
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
