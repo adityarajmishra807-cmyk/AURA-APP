@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame } from "lucide-react";
+import { CornerDownLeft, Copy, Reply, Zap, Diamond, Flame, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessage } from "@/hooks/useChat";
+import { ReportDialog } from "@/components/reports/ReportDialog";
 
 const reactionTypes = [
   { key: "impact", label: "Impact", icon: Zap },
@@ -84,6 +85,7 @@ export function ChatBubble({
 }: Props) {
   const [showActions, setShowActions] = useState(false);
   const [tapped, setTapped] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const borderRadius = isMine
     ? `${isFirstInGroup ? "18px" : "6px"} 18px 18px ${isLastInGroup ? "18px" : "6px"}`
@@ -298,10 +300,29 @@ export function ChatBubble({
                 >
                   <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
+                {!isMine && (
+                  <button
+                    onClick={() => { setShowReport(true); setShowActions(false); }}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-destructive/10 transition-all"
+                  >
+                    <Flag className="w-3.5 h-3.5 text-destructive/70" />
+                  </button>
+                )}
               </motion.div>
             </>
           )}
         </AnimatePresence>
+
+        {/* Report dialog */}
+        {!isMine && (
+          <ReportDialog
+            open={showReport}
+            onOpenChange={setShowReport}
+            contentType="message"
+            contentId={message.id}
+            reportedUserId={message.sender_id}
+          />
+        )}
       </div>
     </motion.div>
   );

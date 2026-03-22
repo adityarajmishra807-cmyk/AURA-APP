@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FriendButton } from "./FriendButton";
 import { AnimatedRatingBar } from "./AnimatedRatingBar";
-import { Coins, Clock, Check, Trash2, MoreVertical, Share2 } from "lucide-react";
+import { Coins, Clock, Check, Trash2, MoreVertical, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HashtagRenderer } from "./HashtagRenderer";
@@ -15,6 +15,7 @@ import { MediaCarousel } from "./MediaCarousel";
 import { SharePostDialog } from "./SharePostDialog";
 import { CommentSection } from "./CommentSection";
 import { PostLikeButton } from "./PostLikeButton";
+import { ReportDialog } from "@/components/reports/ReportDialog";
 import { useCosmetics } from "@/hooks/useCosmetics";
 import { formatDistanceToNow } from "date-fns";
 import { use3DTilt } from "@/hooks/use3DTilt";
@@ -77,6 +78,7 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
   const [deleting, setDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const isOwnPost = user?.id === post.user_id;
   const { cosmetics } = useCosmetics(post.user_id);
   // 3D tilt — disabled on mobile for performance
@@ -201,14 +203,14 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
               onStatusChange={onFriendChange}
             />
           )}
-          {isOwnPost && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isOwnPost && (
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => setShowDeleteDialog(true)}
@@ -216,9 +218,18 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete post
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+              )}
+              {!isOwnPost && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setShowReportDialog(true)}
+                >
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report post
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Trending rank badge */}
@@ -396,6 +407,15 @@ export function PostCard({ post, userRating, collegeName, friendStatus, friendsh
 
       {/* Share dialog */}
       <SharePostDialog postId={post.id} open={showShareDialog} onOpenChange={setShowShareDialog} />
+
+      {/* Report dialog */}
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        contentType="post"
+        contentId={post.id}
+        reportedUserId={post.user_id}
+      />
     </motion.div>
   );
 }
