@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PostFeed } from "@/components/feed/PostFeed";
@@ -9,7 +10,7 @@ import { FeedbackBot } from "@/components/FeedbackBot";
 import { StoryBar } from "@/components/stories/StoryBar";
 import { UserSearch } from "@/components/feed/UserSearch";
 import { useAuth } from "@/contexts/AuthContext";
-import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown, Flame, Target } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -43,10 +44,21 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 350, damping: 30 }}
         >
-          <h1 className="font-display text-xl md:text-3xl font-bold text-foreground">
-            Welcome, <span className="text-gradient">{profile?.username}</span> ✨
-          </h1>
-          <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Rate, post, and rise.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-xl md:text-3xl font-bold text-foreground">
+                Welcome, <span className="text-gradient">{profile?.username}</span> ✨
+              </h1>
+              <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Rate, post, and rise.</p>
+            </div>
+            <Link
+              to="/spin"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all tap-scale"
+            >
+              <Target className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold text-primary hidden sm:inline">Daily Spin</span>
+            </Link>
+          </div>
         </motion.div>
 
         {/* User Search */}
