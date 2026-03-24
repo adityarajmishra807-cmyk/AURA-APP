@@ -83,36 +83,64 @@ export default function DailySpin() {
   const [canSpin, setCanSpin] = useState(true);
   const [idlePulse, setIdlePulse] = useState(true);
   const wheelControls = useAnimationControls();
-  const hasChecked = useRef(false);
 
-  // Check cooldown on mount
+  // Re-check cooldown whenever the signed-in user changes
   useEffect(() => {
-    if (!profile || hasChecked.current) return;
-    hasChecked.current = true;
-    supabase
-      .from("daily_spins")
-      .select("spun_at")
-      .eq("user_id", profile.user_id)
-      .order("spun_at", { ascending: false })
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          const next = new Date(new Date(data[0].spun_at).getTime() + 86400000);
-          if (next > new Date()) {
-            setCooldownEnd(next);
-            setCanSpin(false);
-          }
+    let active = true;
+
+    const syncSpinState = async () => {
+      setSpinning(false);
+      setShowReward(false);
+      setReward(null);
+      setCooldownEnd(null);
+      setTimeLeft("");
+      setCanSpin(true);
+      setIdlePulse(true);
+
+      if (!profile?.user_id) return;
+
+      const { data, error } = await supabase
+        .from("daily_spins")
+        .select("spun_at")
+        .eq("user_id", profile.user_id)
+        .order("spun_at", { ascending: false })
+        .limit(1);
+
+      if (!active) return;
+
+      if (error) {
+        toast.error("Could not load spin status");
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const next = new Date(new Date(data[0].spun_at).getTime() + 86400000);
+        if (next > new Date()) {
+          setCooldownEnd(next);
+          setCanSpin(false);
         }
-      });
-  }, [profile]);
+      }
+    };
+
+    void syncSpinState();
+
+    return () => {
+      active = false;
+    };
+  }, [profile?.user_id]);
 
   // Countdown
   useEffect(() => {
     if (!cooldownEnd) return;
     const tick = () => {
       const diff = cooldownEnd.getTime() - Date.now();
-      if (diff <= 0) { setCanSpin(true); setCooldownEnd(null); setTimeLeft(""); }
-      else setTimeLeft(fmt(diff));
+      if (diff <= 0) {
+        setCanSpin(true);
+        setCooldownEnd(null);
+        setTimeLeft("");
+      } else {
+        setTimeLeft(fmt(diff));
+      }
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -124,8 +152,15 @@ export default function DailySpin() {
     setSpinning(true);
     setIdlePulse(false);
 
-    const { data } = await supabase.rpc("spin_daily_wheel");
+    const { data, error } = await supabase.rpc("spin_daily_wheel");
     const res = data as any;
+
+    if (error) {
+      toast.error(error.message || "Spin failed");
+      setSpinning(false);
+      setIdlePulse(true);
+      return;
+    }
 
     if (!res?.success) {
       if (res?.error === "cooldown" && res?.next_spin_at) {
@@ -139,24 +174,16 @@ export default function DailySpin() {
       return;
     }
 
-    // Find the matching segment index
     let segIdx = SEGMENTS.findIndex((s) => s.type === res.reward_type);
     if (segIdx < 0) {
-      // For aurix_25 the RPC returns "aurix_25" but we have "aurix_25" and "aurix_25b"
       segIdx = SEGMENTS.findIndex((s) => s.type.startsWith(res.reward_type));
     }
     if (segIdx < 0) segIdx = 0;
 
-    // The pointer is at the TOP (12 o'clock = -90°).
-    // Segment i spans from (i * ARC) to ((i+1) * ARC) degrees in SVG space (starting at -90°).
-    // We need the wheel to rotate so that the midpoint of segIdx aligns with the pointer.
-    // segCenter in wheel-local degrees from the start: segIdx * ARC + ARC/2
-    // To bring that to the top, we rotate by -(segCenter) + but since CSS rotates clockwise
-    // and our SVG segments start at -90°, the target is: 360 - (segIdx * ARC + ARC/2)
     const segCenter = segIdx * ARC + ARC / 2;
-    const landAngle = 360 - segCenter; // where the pointer would point
-    const fullSpins = 6 * 360; // 6 full rotations for drama
-    const jitter = (Math.random() - 0.5) * (ARC * 0.6); // randomize within segment
+    const landAngle = 360 - segCenter;
+    const fullSpins = 6 * 360;
+    const jitter = (Math.random() - 0.5) * (ARC * 0.6);
     const targetRotation = currentRotation + fullSpins + landAngle - (currentRotation % 360) + jitter;
 
     setCurrentRotation(targetRotation);
@@ -165,11 +192,10 @@ export default function DailySpin() {
       rotate: targetRotation,
       transition: {
         duration: 5,
-        ease: [0.15, 0.85, 0.25, 1], // dramatic deceleration
+        ease: [0.15, 0.85, 0.25, 1],
       },
     });
 
-    // Small bounce at end
     await wheelControls.start({
       rotate: targetRotation + 2,
       transition: { duration: 0.15, ease: "easeOut" },
@@ -188,7 +214,7 @@ export default function DailySpin() {
     setSpinning(false);
     setCanSpin(false);
     setCooldownEnd(new Date(Date.now() + 86400000));
-    refreshProfile();
+    void refreshProfile();
   }, [spinning, canSpin, currentRotation, wheelControls, refreshProfile]);
 
   // Background particles (memoized)
