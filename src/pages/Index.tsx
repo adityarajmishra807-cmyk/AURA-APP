@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PostFeed } from "@/components/feed/PostFeed";
@@ -9,7 +10,7 @@ import { FeedbackBot } from "@/components/FeedbackBot";
 import { StoryBar } from "@/components/stories/StoryBar";
 import { UserSearch } from "@/components/feed/UserSearch";
 import { useAuth } from "@/contexts/AuthContext";
-import { Coins, TrendingUp, TrendingDown, Flame } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown, Flame, Target } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
