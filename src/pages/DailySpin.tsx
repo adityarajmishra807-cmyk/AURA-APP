@@ -359,12 +359,15 @@ export default function DailySpin() {
 
                   const mid = start + ARC / 2;
                   const mr = (mid * Math.PI) / 180;
-                  const iconR = 100;
-                  const labelR = 75;
-                  const ix = 150 + iconR * Math.cos(mr);
-                  const iy = 150 + iconR * Math.sin(mr);
+                  // Place label at ~60% radius, emoji at ~82% radius along the radial line
+                  const labelR = 85;
+                  const iconR = 115;
                   const lx = 150 + labelR * Math.cos(mr);
                   const ly = 150 + labelR * Math.sin(mr);
+                  const ix = 150 + iconR * Math.cos(mr);
+                  const iy = 150 + iconR * Math.sin(mr);
+                  // Rotate text to align along the radial direction (pointing outward)
+                  const textAngle = mid + 90;
 
                   return (
                     <g key={i}>
@@ -375,7 +378,6 @@ export default function DailySpin() {
                         strokeWidth="1.5"
                         filter="url(#inner-shadow)"
                       />
-                      {/* Highlight edge */}
                       <path
                         d={`M 150 150 L ${x1} ${y1} A 148 148 0 0 1 ${x2} ${y2} Z`}
                         fill="none"
@@ -387,8 +389,7 @@ export default function DailySpin() {
                         y={iy}
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        fontSize="20"
-                        transform={`rotate(${mid}, ${ix}, ${iy})`}
+                        fontSize="16"
                       >
                         {seg.icon}
                       </text>
@@ -398,9 +399,9 @@ export default function DailySpin() {
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fill="white"
-                        fontSize="11"
+                        fontSize="10"
                         fontWeight="bold"
-                        transform={`rotate(${mid}, ${lx}, ${ly})`}
+                        transform={`rotate(${textAngle}, ${lx}, ${ly})`}
                         style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
                       >
                         {seg.label}
