@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles, Pencil, Check, X } from "lucide-react";
+import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles, Pencil, Check, X, Target } from "lucide-react";
 import { toast } from "sonner";
 import { validateContent } from "@/lib/profanityFilter";
 
