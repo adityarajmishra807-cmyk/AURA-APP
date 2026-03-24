@@ -461,6 +461,12 @@ export default function Settings() {
                     Install App
                   </Button>
                 </Link>
+                <Link to="/spin">
+                  <Button variant="outline" className="w-full h-11 gap-2 border-border/30 bg-background/30 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all">
+                    <Target className="w-4 h-4" />
+                    Daily Spin
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 
