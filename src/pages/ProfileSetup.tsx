@@ -26,6 +26,7 @@ export default function ProfileSetup() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     supabase.from("colleges").select("id, name").order("name").then(({ data }) => {
