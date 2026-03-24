@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles, Pencil, Check, X, Target } from "lucide-react";
+import { Save, Gift, Download, LogOut, Award, ShoppingBag, Sparkles, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { validateContent } from "@/lib/profanityFilter";
 
@@ -459,12 +459,6 @@ export default function Settings() {
                   <Button variant="outline" className="w-full h-11 gap-2 border-border/30 bg-background/30 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all">
                     <Download className="w-4 h-4" />
                     Install App
-                  </Button>
-                </Link>
-                <Link to="/spin">
-                  <Button variant="outline" className="w-full h-11 gap-2 border-border/30 bg-background/30 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all">
-                    <Target className="w-4 h-4" />
-                    Daily Spin
                   </Button>
                 </Link>
               </div>
