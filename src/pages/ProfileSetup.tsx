@@ -215,6 +215,22 @@ export default function ProfileSetup() {
             <p className="text-xs text-muted-foreground">You can change your college anytime</p>
           </div>
 
+          {/* Referral Code */}
+          <div className="space-y-2">
+            <Label htmlFor="referral" className="flex items-center gap-1.5">
+              <Gift className="w-3 h-3 text-primary" />
+              Referral Code
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="referral"
+              placeholder="Enter referral code"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              className="bg-muted/50 border-border/50 focus:border-primary font-mono"
+            />
+          </div>
+
           <Button
             onClick={handleSave}
             className="w-full gradient-primary text-primary-foreground font-semibold h-11 glow-sm"
