@@ -7,13 +7,14 @@ import {
   Send,
   MessageCircle,
   Settings,
+  Target,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutDashboard, href: "/" },
   { label: "Chat", icon: MessageCircle, href: "/chat" },
+  { label: "Spin", icon: Target, href: "/spin" },
   { label: "Board", icon: Trophy, href: "/leaderboard" },
-  { label: "Send", icon: Send, href: "/transfer" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
