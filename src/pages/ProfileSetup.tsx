@@ -127,6 +127,18 @@ export default function ProfileSetup() {
     if (error) {
       toast.error("Failed to save profile");
     } else {
+      // Register referral if code provided
+      if (referralCode.trim()) {
+        const { data } = await supabase.rpc("register_referral", {
+          p_referral_code: referralCode.trim(),
+        });
+        const result = data as any;
+        if (result?.success) {
+          toast.success("Referral registered! 🎉");
+        } else if (result?.error) {
+          toast.error(result.error);
+        }
+      }
       await refreshProfile();
       toast.success("Profile complete! Welcome to Aura ✨");
     }
