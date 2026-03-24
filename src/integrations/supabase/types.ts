@@ -420,6 +420,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_spins: {
+        Row: {
+          id: string
+          reward_amount: number
+          reward_type: string
+          spun_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reward_amount?: number
+          reward_type: string
+          spun_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reward_amount?: number
+          reward_type?: string
+          spun_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friends: {
         Row: {
           addressee_id: string
@@ -1294,6 +1318,7 @@ export type Database = {
       refresh_leaderboard_cache: { Args: never; Returns: undefined }
       register_referral: { Args: { p_referral_code: string }; Returns: Json }
       resolve_battle: { Args: { p_battle_id: string }; Returns: Json }
+      spin_daily_wheel: { Args: never; Returns: Json }
       submit_rating: {
         Args: { p_post_id: string; p_value: number }
         Returns: Json
