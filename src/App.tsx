@@ -23,6 +23,7 @@ import Install from "./pages/Install";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
 import Battles from "./pages/Battles";
+import DailySpin from "./pages/DailySpin";
 
 const queryClient = new QueryClient();
 
