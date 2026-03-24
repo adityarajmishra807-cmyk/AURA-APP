@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Sparkles, ArrowRight } from "lucide-react";
+import { Camera, Sparkles, ArrowRight, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { validateContent } from "@/lib/profanityFilter";
 
@@ -26,6 +26,7 @@ export default function ProfileSetup() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     supabase.from("colleges").select("id, name").order("name").then(({ data }) => {
@@ -126,6 +127,18 @@ export default function ProfileSetup() {
     if (error) {
       toast.error("Failed to save profile");
     } else {
+      // Register referral if code provided
+      if (referralCode.trim()) {
+        const { data } = await supabase.rpc("register_referral", {
+          p_referral_code: referralCode.trim(),
+        });
+        const result = data as any;
+        if (result?.success) {
+          toast.success("Referral registered! 🎉");
+        } else if (result?.error) {
+          toast.error(result.error);
+        }
+      }
       await refreshProfile();
       toast.success("Profile complete! Welcome to Aura ✨");
     }
@@ -212,6 +225,22 @@ export default function ProfileSetup() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">You can change your college anytime</p>
+          </div>
+
+          {/* Referral Code */}
+          <div className="space-y-2">
+            <Label htmlFor="referral" className="flex items-center gap-1.5">
+              <Gift className="w-3 h-3 text-primary" />
+              Referral Code
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="referral"
+              placeholder="Enter referral code"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              className="bg-muted/50 border-border/50 focus:border-primary font-mono"
+            />
           </div>
 
           <Button
