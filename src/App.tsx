@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
             <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
             <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
+            <Route path="/spin" element={<ProtectedRoute><DailySpin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
